@@ -147,8 +147,9 @@ class ConnectorController extends Controller
 
         $idColumn = $config['growthatlas_id_column'] ?? 'growthatlas_draft_id';
 
-        // Idempotency check
-        if ($draftId > 0 && in_array($idColumn, (new $modelClass)->getFillable(), true)) {
+        // Idempotency check — use the column directly, regardless of $fillable/$guarded
+        // (models using $guarded = [] have an empty $fillable, so in_array check is wrong).
+        if ($draftId > 0) {
             $existing = $modelClass::where($idColumn, $draftId)->first();
             if ($existing) {
                 return response()->json([
@@ -178,7 +179,7 @@ class ConnectorController extends Controller
         $requestedStatus = $data['publish_status'] ?? 'draft';
         $modelData[$statusColumn] = $statusMap[$requestedStatus] ?? 'draft';
 
-        if ($draftId > 0 && in_array($idColumn, (new $modelClass)->getFillable(), true)) {
+        if ($draftId > 0) {
             $modelData[$idColumn] = $draftId;
         }
 
