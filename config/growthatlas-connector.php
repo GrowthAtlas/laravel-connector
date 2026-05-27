@@ -97,10 +97,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Inbound Request Logging
+    |--------------------------------------------------------------------------
+    | When true, every request from GrowthAtlas is written to the
+    | growthatlas_inbound_requests table (publish + run the migration first).
+    | This powers the recent-requests table on the Filament admin page.
+    | Disable in high-traffic environments if you don't need the audit trail.
+    */
+    'log_inbound' => env('GROWTHATLAS_LOG_INBOUND', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filament Integration (optional)
     |--------------------------------------------------------------------------
-    | Whether to register the optional Filament admin page.
+    | Set filament_page = true (or GROWTHATLAS_FILAMENT=true in .env) to register
+    | the GrowthAtlas Connector Status page in your Filament admin panel.
     | Requires filament/filament to be installed.
+    |
+    | filament_panel_id — the ID of the Filament panel to register the page in.
+    | Leave null to use the first discovered panel.
     */
-    'filament_page' => false,
+    'filament_page'     => env('GROWTHATLAS_FILAMENT', false),
+    'filament_panel_id' => null,
 ];

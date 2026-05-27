@@ -178,7 +178,9 @@ Then click **Test Connection** in the GrowthAtlas dashboard. A green tick means 
 | `pages.model` | `App\Models\Post` | Eloquent model used when `source = "eloquent"`. |
 | `pages.url_column` | `"slug"` | Column containing the page URL or slug. |
 | `entities` | `[]` | Map of `type => ModelClass` for the `/entities` endpoint. |
-| `filament_page` | `false` | Whether to register the Filament ConnectorStatus admin page. |
+| `log_inbound` | `false` | Log each inbound request to `growthatlas_inbound_requests` table. Powers the Filament page. |
+| `filament_page` | `false` | Register the Filament ConnectorStatus admin page (`GROWTHATLAS_FILAMENT=true`). |
+| `filament_panel_id` | `null` | Filament panel ID to register the page in. `null` = first panel. |
 
 ### Environment variables
 
@@ -191,6 +193,10 @@ GROWTHATLAS_SIGNING_SECRET=
 
 # Optional — change the default publish model
 GROWTHATLAS_PUBLISH_MODEL=App\Models\Post
+
+# Optional — Filament admin page + request logging
+GROWTHATLAS_FILAMENT=false
+GROWTHATLAS_LOG_INBOUND=false
 ```
 
 ---
@@ -305,13 +311,39 @@ The prefix is configurable via `route_prefix` in the config.
 
 ## Filament admin page (optional)
 
-Enable the built-in Filament status page by setting `filament_page => true` in the config and then publishing the Filament page class:
+Enable the built-in **GrowthAtlas Connector** Filament page to monitor your integration without leaving the admin panel.
 
-```bash
-php artisan vendor:publish --tag=growthatlas-connector-filament
+### 1. Enable in `.env`
+
+```dotenv
+GROWTHATLAS_FILAMENT=true
+GROWTHATLAS_LOG_INBOUND=true
 ```
 
-This copies the page class into your `app/Filament/Pages/` directory. Requires `filament/filament` to be installed.
+### 2. Publish and run the audit-log migration
+
+```bash
+php artisan vendor:publish --tag=growthatlas-connector-migrations
+php artisan migrate
+```
+
+This creates the `growthatlas_inbound_requests` table.
+
+### 3. Clear config cache
+
+```bash
+php artisan config:clear
+```
+
+The **GrowthAtlas** page now appears in your Filament sidebar under the **Integrations** group. It shows:
+
+- API key status (masked) and signing secret status
+- Last inbound request timestamp
+- Recent 20 inbound requests — endpoint, HTTP status, signature validity, IP, time
+- **Rotate signing secret** action — writes a new secret to `.env` and displays it for copying to the GrowthAtlas dashboard
+- **Open /health** button
+
+> If you use multiple Filament panels, set `filament_panel_id` in `config/growthatlas-connector.php` to the ID of the panel where you want the page to appear.
 
 ---
 
