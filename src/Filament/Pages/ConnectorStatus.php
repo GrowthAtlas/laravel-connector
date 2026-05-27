@@ -23,11 +23,11 @@ use Illuminate\Support\Str;
  */
 class ConnectorStatus extends Page
 {
-    protected static ?string $navigationIcon  = 'heroicon-o-signal';
-    protected static ?string $navigationLabel = 'GrowthAtlas';
-    protected static ?string $navigationGroup = 'Integrations';
-    protected static string  $view            = 'growthatlas-connector::filament.connector-status';
-    protected static ?int    $navigationSort  = 90;
+    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-signal';
+    protected static ?string                 $navigationLabel = 'GrowthAtlas';
+    protected static string|\UnitEnum|null   $navigationGroup = 'Integrations';
+    protected string                         $view            = 'growthatlas-connector::filament.connector-status';
+    protected static ?int                    $navigationSort  = 90;
 
     public function getTitle(): string
     {
