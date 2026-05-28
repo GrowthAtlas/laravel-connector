@@ -21,7 +21,6 @@ class ConnectorServiceProvider extends ServiceProvider
         $this->registerRoutes();
         $this->registerViews();
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->bootFilament();
     }
 
     // ── Publishable assets ────────────────────────────────────────────────────
@@ -69,35 +68,5 @@ class ConnectorServiceProvider extends ServiceProvider
     private function registerViews(): void
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'growthatlas-connector');
-    }
-
-    // ── Filament ──────────────────────────────────────────────────────────────
-
-    private function bootFilament(): void
-    {
-        if (! config('growthatlas-connector.filament_page', false)) {
-            return;
-        }
-
-        if (! class_exists(\Filament\Panel::class)) {
-            return;
-        }
-
-        $this->callAfterResolving('filament', function ($filament) {
-            try {
-                $panelId = config('growthatlas-connector.filament_panel_id');
-                $panels  = $filament->getPanels();
-
-                $panel = $panelId
-                    ? ($panels[$panelId] ?? reset($panels))
-                    : reset($panels);
-
-                if ($panel) {
-                    $panel->pages([\GrowthAtlas\Connector\Filament\Pages\ConnectorStatus::class]);
-                }
-            } catch (\Throwable) {
-                // Never break the app if Filament registration fails.
-            }
-        });
     }
 }

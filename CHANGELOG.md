@@ -11,6 +11,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] — 2026-05-28
+
+### Added
+
+- `GrowthAtlas\Connector\Filament\GrowthAtlasConnectorPlugin` — implements
+  `Filament\Contracts\Plugin` so the Connector Status page is registered the
+  correct Filament 4 way via `->plugin(GrowthAtlasConnectorPlugin::make())` in
+  the application's panel provider.
+
+### Fixed
+
+- **[Blocker — Filament 4]** The Filament admin page was silently never registered.
+  `ConnectorServiceProvider` used `callAfterResolving('filament', ...)` + `$panel->pages()`
+  which fires after Filament 4 has already booted its panels, so the page was never
+  added. A bare `catch (\Throwable)` block swallowed the failure with no indication.
+  Replaced with a proper `FilamentPlugin` implementation.
+
+### Removed
+
+- Auto-registration of the Filament page from `ConnectorServiceProvider` — this never
+  worked reliably in Filament 4 and the `catch (\Throwable)` masked the failure.
+- `filament_page` and `filament_panel_id` config keys — registration is now fully
+  explicit via the plugin (see README).
+- `GROWTHATLAS_FILAMENT` env variable — no longer used.
+
+### Migration guide (v1.2.0 → v1.3.0)
+
+Remove `GROWTHATLAS_FILAMENT=true` from your `.env` (or leave it — it is harmless
+but unused). Then register the plugin in your Filament panel provider:
+
+```php
+use GrowthAtlas\Connector\Filament\GrowthAtlasConnectorPlugin;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugin(GrowthAtlasConnectorPlugin::make())
+        // ...
+}
+```
+
+---
+
 ## [1.2.0] — 2026-05-28
 
 ### Fixed

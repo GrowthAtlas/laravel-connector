@@ -2,7 +2,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/growthatlas/laravel-connector.svg?style=flat-square)](https://packagist.org/packages/growthatlas/laravel-connector)
 [![PHP Version](https://img.shields.io/packagist/php-v/growthatlas/laravel-connector.svg?style=flat-square)](https://packagist.org/packages/growthatlas/laravel-connector)
-[![Laravel](https://img.shields.io/badge/Laravel-10%20%7C%2011%20%7C%2012-red.svg?style=flat-square)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-10%20%7C%2011%20%7C%2012%20%7C%2013-red.svg?style=flat-square)](https://laravel.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 The official Laravel package for connecting any Laravel application to [GrowthAtlas](https://growthatlas.io).
@@ -47,11 +47,11 @@ GrowthAtlas dashboard
 
 ## Requirements
 
-| Requirement     | Version                  |
-|-----------------|--------------------------|
-| PHP             | ^8.1                     |
-| Laravel         | ^10.0, ^11.0, or ^12.0   |
-| Filament (opt.) | ^3.0 or ^4.0             |
+| Requirement     | Version                           |
+|-----------------|-----------------------------------|
+| PHP             | ^8.1                              |
+| Laravel         | ^10.0, ^11.0, ^12.0, or ^13.0    |
+| Filament (opt.) | ^4.0                              |
 
 ---
 
@@ -179,8 +179,6 @@ Then click **Test Connection** in the GrowthAtlas dashboard. A green tick means 
 | `pages.url_column` | `"slug"` | Column containing the page URL or slug. |
 | `entities` | `[]` | Map of `type => ModelClass` for the `/entities` endpoint. |
 | `log_inbound` | `false` | Log each inbound request to `growthatlas_inbound_requests` table. Powers the Filament page. |
-| `filament_page` | `false` | Register the Filament ConnectorStatus admin page (`GROWTHATLAS_FILAMENT=true`). |
-| `filament_panel_id` | `null` | Filament panel ID to register the page in. `null` = first panel. |
 
 ### Environment variables
 
@@ -195,7 +193,6 @@ GROWTHATLAS_SIGNING_SECRET=
 GROWTHATLAS_PUBLISH_MODEL=App\Models\Post
 
 # Optional — Filament admin page + request logging
-GROWTHATLAS_FILAMENT=false
 GROWTHATLAS_LOG_INBOUND=false
 ```
 
@@ -311,16 +308,28 @@ The prefix is configurable via `route_prefix` in the config.
 
 ## Filament admin page (optional)
 
-Enable the built-in **GrowthAtlas Connector** Filament page to monitor your integration without leaving the admin panel.
+Enable the built-in **GrowthAtlas Connector** Filament page to monitor your integration without leaving the admin panel. Requires **Filament 4**.
 
-### 1. Enable in `.env`
+### 1. Register the plugin in your panel provider
+
+```php
+use GrowthAtlas\Connector\Filament\GrowthAtlasConnectorPlugin;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugin(GrowthAtlasConnectorPlugin::make())
+        // ...
+}
+```
+
+### 2. Enable inbound-request logging (optional but recommended)
 
 ```dotenv
-GROWTHATLAS_FILAMENT=true
 GROWTHATLAS_LOG_INBOUND=true
 ```
 
-### 2. Publish and run the audit-log migration
+Then publish and run the audit-log migration:
 
 ```bash
 php artisan vendor:publish --tag=growthatlas-connector-migrations
@@ -342,8 +351,6 @@ The **GrowthAtlas** page now appears in your Filament sidebar under the **Integr
 - Recent 20 inbound requests — endpoint, HTTP status, signature validity, IP, time
 - **Rotate signing secret** action — writes a new secret to `.env` and displays it for copying to the GrowthAtlas dashboard
 - **Open /health** button
-
-> If you use multiple Filament panels, set `filament_panel_id` in `config/growthatlas-connector.php` to the ID of the panel where you want the page to appear.
 
 ---
 
@@ -418,7 +425,7 @@ Run again with the same `growthatlas_draft_id` to verify idempotency — `create
 ### Prerequisites
 
 - PHP 8.1+
-- Laravel 10, 11, or 12
+- Laravel 10, 11, 12, or 13
 - Composer installed
 - A GrowthAtlas account at https://growthatlas.io with a Laravel integration created
 

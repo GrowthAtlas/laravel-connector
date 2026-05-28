@@ -110,13 +110,18 @@ return [
     |--------------------------------------------------------------------------
     | Filament Integration (optional)
     |--------------------------------------------------------------------------
-    | Set filament_page = true (or GROWTHATLAS_FILAMENT=true in .env) to register
-    | the GrowthAtlas Connector Status page in your Filament admin panel.
-    | Requires filament/filament to be installed.
+    | Register the GrowthAtlas Connector Status page in your Filament panel by
+    | adding the plugin to your panel provider:
     |
-    | filament_panel_id — the ID of the Filament panel to register the page in.
-    | Leave null to use the first discovered panel.
+    |   use GrowthAtlas\Connector\Filament\GrowthAtlasConnectorPlugin;
+    |
+    |   public function panel(Panel $panel): Panel
+    |   {
+    |       return $panel
+    |           ->plugin(GrowthAtlasConnectorPlugin::make())
+    |           // ...
+    |   }
+    |
+    | Requires filament/filament ^4.0 to be installed.
     */
-    'filament_page'     => env('GROWTHATLAS_FILAMENT', false),
-    'filament_panel_id' => null,
 ];
