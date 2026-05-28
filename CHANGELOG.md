@@ -11,6 +11,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] — 2026-05-28
+
+### Fixed
+
+- **[Bug 1 — High]** Published posts returned 404 on sites that require a non-null
+  `published_at` to show a post publicly. The connector set the `status` column but never
+  wrote a timestamp. `createContentDraft` now automatically sets `published_at = now()`
+  when `publish_status` is `"published"` and `publishing.published_at_column` is
+  configured. The column defaults to `"published_at"`; set it to `null` to disable the
+  behaviour (e.g. if your model sets it via an observer).
+
+- **[Bug 2 — Medium]** Default config `publishing.fields` did not include
+  `featured_image_url` / `featured_image_alt`, so featured images were silently dropped.
+  Both fields are now present as commented-out examples with an inline note warning
+  integrators **not** to pass the value through `Storage::url()` (which corrupts an
+  absolute CDN URL by prepending `/storage/`).
+
+### Changed
+
+- `GET /health` now reports `connector_version: 1.5.0`.
+- `publishing.fields` now documents all available GrowthAtlas payload fields
+  in a comment above the map.
+
+### Migration guide (v1.4.0 → v1.5.0)
+
+Re-publish the config to pick up the new keys:
+
+```bash
+php artisan vendor:publish --tag=growthatlas-config --force
+```
+
+If you do **not** want the connector to auto-set `published_at` (e.g. your model
+already handles it via an observer), add this to your published config:
+
+```php
+'published_at_column' => null,
+```
+
+To enable featured image imports, uncomment the relevant lines in the `fields` map:
+
+```php
+'featured_image_url' => 'featured_image_path', // or whatever column stores the URL
+'featured_image_alt' => 'featured_image_alt',
+```
+
+> **Note:** `featured_image_url` is always an absolute CDN URL
+> (`https://images.unsplash.com/...`). Do **not** pass it through `Storage::url()` —
+> check `str_starts_with($value, 'http')` and use the value as-is.
+
+---
+
 ## [1.4.0] — 2026-05-28
 
 ### Fixed

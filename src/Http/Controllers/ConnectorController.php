@@ -19,7 +19,7 @@ class ConnectorController extends Controller
             'data' => [
                 'status' => 'ok',
                 'connector' => 'laravel',
-                'connector_version' => '1.0.0',
+                'connector_version' => '1.5.0',
                 'platform' => 'laravel',
                 'platform_version' => App::version(),
                 'php_version' => PHP_VERSION,
@@ -178,6 +178,15 @@ class ConnectorController extends Controller
 
         $requestedStatus = $data['publish_status'] ?? 'draft';
         $modelData[$statusColumn] = $statusMap[$requestedStatus] ?? 'draft';
+
+        // Auto-set published_at when pushing as published, if the column is configured
+        $publishedAtColumn = $config['published_at_column'] ?? null;
+        if ($publishedAtColumn && $requestedStatus === 'published') {
+            // Only set if not already provided via the field map
+            if (! isset($modelData[$publishedAtColumn])) {
+                $modelData[$publishedAtColumn] = now();
+            }
+        }
 
         if ($draftId > 0) {
             $modelData[$idColumn] = $draftId;

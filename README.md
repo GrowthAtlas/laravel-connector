@@ -174,6 +174,7 @@ Then click **Test Connection** in the GrowthAtlas dashboard. A green tick means 
 | `publishing.status_column` | `"status"` | Column that stores the publish status. |
 | `publishing.status_map` | `{draft: draft, published: published}` | Maps GrowthAtlas status values to your model's status values. |
 | `publishing.growthatlas_id_column` | `"growthatlas_draft_id"` | Idempotency column — must be `unique` indexed. |
+| `publishing.published_at_column` | `"published_at"` | Timestamp column set to `now()` when pushing as `published`. Set to `null` to disable. |
 | `pages.source` | `"eloquent"` | How pages are fetched: `"eloquent"` or `"sitemap"`. |
 | `pages.model` | `App\Models\Post` | Eloquent model used when `source = "eloquent"`. |
 | `pages.url_column` | `"slug"` | Column containing the page URL or slug. |
@@ -210,9 +211,14 @@ GROWTHATLAS_LOG_INBOUND=false
         'slug'             => 'slug',
         'body'             => 'body',
         'meta_description' => 'meta_description',
+        // Featured image — value is an absolute CDN URL.
+        // Do NOT pass through Storage::url() as it will corrupt absolute URLs.
+        // 'featured_image_url' => 'featured_image_path',
+        // 'featured_image_alt' => 'featured_image_alt',
     ],
-    'status_column'         => 'status',
-    'growthatlas_id_column' => 'growthatlas_draft_id',
+    'status_column'          => 'status',
+    'published_at_column'    => 'published_at',   // auto-set to now() when publishing
+    'growthatlas_id_column'  => 'growthatlas_draft_id',
     'status_map' => ['draft' => 'draft', 'published' => 'published'],
 ],
 'pages' => [
@@ -366,6 +372,13 @@ The **GrowthAtlas** page now appears in your Filament sidebar under the **Integr
 - Run `php artisan route:list | grep growthatlas` — if no routes appear, the service provider wasn't registered. Check that your app has package auto-discovery enabled (most do by default).
 - If you use route caching: `php artisan route:clear && php artisan route:cache`.
 - Confirm `route_prefix` in config matches how you're calling the URL.
+
+### Published posts return 404
+
+The connector sets the `status` column but some models also require a non-null `published_at`
+to show posts publicly. Make sure `publishing.published_at_column` is set to your timestamp
+column (default `"published_at"`). The connector then writes `now()` automatically when
+pushing as `"published"`. Set it to `null` if your model handles this via an observer.
 
 ### `500` on `POST /content-drafts`
 
@@ -576,6 +589,8 @@ Go to **Integrations**, find the integration, click **Test Connection**. Green t
 | `500` on `/content-drafts` | Model not found or column missing | Check FQCN in config; run migration |
 | Draft created twice | `growthatlas_draft_id` not in `$fillable` | Add to `$fillable` on the model |
 | Signature 401 | Secret mismatch | Match secret in `.env` and GrowthAtlas dashboard |
+| Published post returns 404 | `published_at` never set | Set `published_at_column` in config (default `"published_at"`) |
+| Featured image missing | Field not in field map | Uncomment `featured_image_url` in `publishing.fields` |
 
 ---
 

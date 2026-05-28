@@ -31,14 +31,22 @@ return [
         'model' => env('GROWTHATLAS_PUBLISH_MODEL', \App\Models\Post::class),
 
         // Column mapping: growthatlas_field => your_model_column
+        // Available GA fields: title, slug, excerpt, body, body_html, meta_title,
+        // meta_description, featured_image_url, featured_image_alt, target_keyword,
+        // language, seo_score, word_count, growthatlas_draft_id, growthatlas_brief_id
         'fields' => [
-            'title'            => 'title',
-            'slug'             => 'slug',
-            'excerpt'          => 'excerpt',
-            'body'             => 'content',
-            'body_html'        => 'content_html',
-            'meta_title'       => 'meta_title',
-            'meta_description' => 'meta_description',
+            'title'              => 'title',
+            'slug'               => 'slug',
+            'excerpt'            => 'excerpt',
+            'body'               => 'content',
+            'body_html'          => 'content_html',
+            'meta_title'         => 'meta_title',
+            'meta_description'   => 'meta_description',
+            // Featured image — value is an absolute CDN URL (e.g. https://images.unsplash.com/...).
+            // Do NOT pass through Storage::url() as it will corrupt absolute URLs.
+            // Map to whatever column stores the image path/URL on your model:
+            // 'featured_image_url' => 'featured_image_path',
+            // 'featured_image_alt' => 'featured_image_alt',
         ],
 
         // Status value mapping: growthatlas_status => your_model_status
@@ -49,6 +57,12 @@ return [
 
         // Column name for publish_status in your model
         'status_column' => 'status',
+
+        // Column for tracking published_at timestamp.
+        // When set and publish_status is "published", the connector automatically
+        // writes now() to this column so your model's visibility checks pass.
+        // Set to null to disable (e.g. if your model sets it via an observer).
+        'published_at_column' => 'published_at',
 
         // Column for the growthatlas_draft_id meta (used for idempotency)
         'growthatlas_id_column' => 'growthatlas_draft_id',
