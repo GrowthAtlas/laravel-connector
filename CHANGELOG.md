@@ -11,6 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] — 2026-05-28
+
+### Fixed
+
+- **[Blocker — Filament 4]** `connector-status.blade.php` was written with hand-rolled
+  HTML and raw Tailwind utility classes. Filament pre-compiles its CSS bundle by scanning
+  only its own source files, so arbitrary vendor-view classes are not guaranteed to be
+  present. In particular `text-[10px]` (a JIT arbitrary-value class) was never compiled,
+  causing the page to render with partial styling only.
+
+  Rewritten to use Filament's own component primitives exclusively:
+  - Three status indicators now use `<x-filament::section>` + `<x-filament::badge>` with
+    named color tokens (`success`, `danger`, `info`, `gray`) — no custom colour classes.
+  - HTTP status-code badges in the recent-requests table now use `<x-filament::badge>`
+    instead of a hand-rolled `<span class="... text-[10px] ...">`.
+  - Signature-validity column uses `<x-filament::badge>` with text labels instead of
+    raw Unicode tick/cross characters.
+  - All outer `<div>` wrappers replaced by `<x-filament::section>` (heading + description
+    slots), which handles dark mode and spacing through Filament's own design tokens.
+  - The `<table>` itself is kept as plain HTML but uses only Tailwind scale utilities
+    (`text-sm`, `font-mono`, `px-3`, `py-2`, `divide-y`, etc.) that are guaranteed to
+    be in Filament's compiled bundle.
+
+---
+
 ## [1.3.0] — 2026-05-28
 
 ### Added

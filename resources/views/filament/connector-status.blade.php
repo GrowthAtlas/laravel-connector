@@ -1,108 +1,136 @@
 <x-filament-panels::page>
-    <div class="space-y-6">
 
-        {{-- Status cards --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    {{-- ── Status overview ──────────────────────────────────────────────── --}}
+    <x-filament::section>
+        <x-slot name="heading">Connector status</x-slot>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
 
             {{-- API Key --}}
-            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-                <div class="flex items-center gap-2 mb-2">
-                    @if($apiKeyConfigured)
-                        <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                        <span class="text-sm font-semibold text-green-700 dark:text-green-400">API Key configured</span>
-                    @else
-                        <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                        <span class="text-sm font-semibold text-red-600 dark:text-red-400">API Key missing</span>
-                    @endif
-                </div>
-                <p class="text-xs font-mono text-gray-400">
+            <div class="flex flex-col gap-2">
+                @if($apiKeyConfigured)
+                    <x-filament::badge color="success" icon="heroicon-m-check-circle" size="lg">
+                        API Key configured
+                    </x-filament::badge>
+                @else
+                    <x-filament::badge color="danger" icon="heroicon-m-x-circle" size="lg">
+                        API Key missing
+                    </x-filament::badge>
+                @endif
+                <p class="text-sm font-mono text-gray-500 dark:text-gray-400 break-all">
                     {{ $apiKeyMasked ?? 'Set GROWTHATLAS_API_KEY in .env' }}
                 </p>
             </div>
 
             {{-- Signing Secret --}}
-            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-                <div class="flex items-center gap-2 mb-2">
-                    @if($signingConfigured)
-                        <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                        <span class="text-sm font-semibold text-green-700 dark:text-green-400">Signing secret set</span>
-                    @else
-                        <span class="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>
-                        <span class="text-sm font-semibold text-gray-500">Signing secret optional</span>
-                    @endif
-                </div>
-                <p class="text-xs text-gray-400">
-                    {{ $signingConfigured ? 'HMAC-SHA256 verification active' : 'Set GROWTHATLAS_SIGNING_SECRET to enable' }}
+            <div class="flex flex-col gap-2">
+                @if($signingConfigured)
+                    <x-filament::badge color="success" icon="heroicon-m-shield-check" size="lg">
+                        HMAC signing active
+                    </x-filament::badge>
+                @else
+                    <x-filament::badge color="gray" icon="heroicon-m-shield-exclamation" size="lg">
+                        Signing secret optional
+                    </x-filament::badge>
+                @endif
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ $signingConfigured
+                        ? 'HMAC-SHA256 signature verification is active.'
+                        : 'Set GROWTHATLAS_SIGNING_SECRET in .env to enable.' }}
                 </p>
             </div>
 
-            {{-- Last inbound --}}
-            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="h-2.5 w-2.5 rounded-full {{ $lastInbound ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
-                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Last inbound request</span>
-                </div>
-                <p class="text-xs text-gray-400">
-                    @if(!$logEnabled)
-                        Logging disabled — set <code class="font-mono">log_inbound = true</code>
-                    @elseif($lastInbound)
-                        {{ $lastInbound->diffForHumans() }}
-                    @else
-                        No requests logged yet
-                    @endif
-                </p>
+            {{-- Last inbound request --}}
+            <div class="flex flex-col gap-2">
+                @if(!$logEnabled)
+                    <x-filament::badge color="gray" icon="heroicon-m-eye-slash" size="lg">
+                        Logging disabled
+                    </x-filament::badge>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Set <code class="font-mono">GROWTHATLAS_LOG_INBOUND=true</code> to track requests.
+                    </p>
+                @elseif($lastInbound)
+                    <x-filament::badge color="info" icon="heroicon-m-arrow-down-tray" size="lg">
+                        Last request {{ $lastInbound->diffForHumans() }}
+                    </x-filament::badge>
+                @else
+                    <x-filament::badge color="gray" icon="heroicon-m-clock" size="lg">
+                        No requests yet
+                    </x-filament::badge>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        No inbound requests have been logged yet.
+                    </p>
+                @endif
             </div>
 
         </div>
+    </x-filament::section>
 
-        {{-- Health URL --}}
-        <div class="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-4 py-3">
-            <span class="text-xs text-gray-500">Health endpoint:</span>
-            <code class="text-xs font-mono text-blue-600 dark:text-blue-400 break-all">{{ $healthUrl }}</code>
-        </div>
+    {{-- ── Health endpoint ──────────────────────────────────────────────── --}}
+    <x-filament::section>
+        <x-slot name="heading">Health endpoint</x-slot>
+        <x-slot name="description">Use this URL to test connectivity from the GrowthAtlas dashboard.</x-slot>
 
-        {{-- Recent requests table --}}
-        @if($logEnabled && $recentRequests->isNotEmpty())
-            <div>
-                <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Recent requests (last 20)</h3>
-                <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs">
-                        <thead class="bg-gray-50 dark:bg-gray-800">
-                            <tr>
-                                <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wide">Endpoint</th>
-                                <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wide">Status</th>
-                                <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wide">Sig</th>
-                                <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wide">IP</th>
-                                <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wide">When</th>
+        <p class="text-sm font-mono break-all text-primary-600 dark:text-primary-400">
+            {{ $healthUrl }}
+        </p>
+    </x-filament::section>
+
+    {{-- ── Recent inbound requests ──────────────────────────────────────── --}}
+    @if($logEnabled)
+        <x-filament::section>
+            <x-slot name="heading">Recent requests</x-slot>
+            <x-slot name="description">Last 20 inbound requests from GrowthAtlas.</x-slot>
+
+            @if($recentRequests->isEmpty())
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    No requests logged yet. Make a request to any connector endpoint to see it here.
+                </p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm divide-y divide-gray-200 dark:divide-white/10">
+                        <thead>
+                            <tr class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                <th class="px-3 py-2 text-left">Endpoint</th>
+                                <th class="px-3 py-2 text-left">Status</th>
+                                <th class="px-3 py-2 text-left">Sig</th>
+                                <th class="px-3 py-2 text-left">IP</th>
+                                <th class="px-3 py-2 text-left">When</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                        <tbody class="divide-y divide-gray-100 dark:divide-white/5">
                             @foreach($recentRequests as $req)
                                 <tr>
-                                    <td class="px-3 py-2 font-mono">{{ $req->endpoint }}</td>
-                                    <td class="px-3 py-2">
-                                        <span class="inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold
-                                            {{ $req->status_code >= 400 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
-                                            {{ $req->status_code }}
-                                        </span>
+                                    <td class="px-3 py-2 font-mono text-gray-900 dark:text-white">
+                                        {{ $req->endpoint }}
                                     </td>
-                                    <td class="px-3 py-2 text-gray-400">
-                                        @if(is_null($req->signature_valid)) <span>—</span>
-                                        @elseif($req->signature_valid) <span class="text-green-600">✓</span>
-                                        @else <span class="text-red-600">✗</span>
+                                    <td class="px-3 py-2">
+                                        <x-filament::badge :color="$req->status_code >= 400 ? 'danger' : 'success'">
+                                            {{ $req->status_code }}
+                                        </x-filament::badge>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        @if(is_null($req->signature_valid))
+                                            <span class="text-gray-400">—</span>
+                                        @elseif($req->signature_valid)
+                                            <x-filament::badge color="success">Valid</x-filament::badge>
+                                        @else
+                                            <x-filament::badge color="danger">Invalid</x-filament::badge>
                                         @endif
                                     </td>
-                                    <td class="px-3 py-2 font-mono text-gray-400">{{ $req->ip ?? '—' }}</td>
-                                    <td class="px-3 py-2 text-gray-400">{{ $req->created_at?->diffForHumans() }}</td>
+                                    <td class="px-3 py-2 font-mono text-gray-500 dark:text-gray-400">
+                                        {{ $req->ip ?? '—' }}
+                                    </td>
+                                    <td class="px-3 py-2 text-gray-500 dark:text-gray-400">
+                                        {{ $req->created_at?->diffForHumans() }}
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div>
-        @elseif($logEnabled)
-            <p class="text-sm text-gray-400">No inbound requests logged yet. Make a request to any connector endpoint to see it here.</p>
-        @endif
+            @endif
+        </x-filament::section>
+    @endif
 
-    </div>
 </x-filament-panels::page>

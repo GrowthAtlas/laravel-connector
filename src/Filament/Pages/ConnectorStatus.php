@@ -11,11 +11,10 @@ use Illuminate\Support\Str;
 /**
  * GrowthAtlas Connector Status — Filament admin page.
  *
- * Registered automatically when:
- *   growthatlas-connector.filament_page = true  AND  filament/filament is installed.
+ * Register in your panel provider via GrowthAtlasConnectorPlugin::make().
  *
  * Shows:
- *   - API key + signing secret configuration status
+ *   - API key + signing secret configuration status (x-filament::badge)
  *   - Last inbound request timestamp
  *   - Recent 20 inbound requests (requires log_inbound = true + migration)
  *   - "Rotate signing secret" action
