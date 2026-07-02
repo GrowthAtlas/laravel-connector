@@ -49,4 +49,32 @@ class ContentDraftsTest extends TestCase
         $this->postJson('/api/growthatlas/v1/content-drafts', $this->payload(), $this->headers(false))
              ->assertStatus(401);
     }
+
+    public function test_update_edits_existing_post_in_place(): void
+    {
+        $create = $this->postJson('/api/growthatlas/v1/content-drafts', $this->payload(7), $this->headers())
+                       ->assertStatus(201);
+        $externalId = $create->json('data.external_id');
+
+        $updated = array_merge($this->payload(7), ['title' => 'Updated Title', 'body' => 'New body.']);
+
+        $this->putJson("/api/growthatlas/v1/content-drafts/{$externalId}", $updated, $this->headers())
+             ->assertStatus(200)
+             ->assertJsonPath('data.updated', true)
+             ->assertJsonPath('data.created', false);
+
+        $post = \GrowthAtlas\Connector\Tests\Stubs\Post::where('growthatlas_draft_id', 7)->firstOrFail();
+        $this->assertSame('Updated Title', $post->title);
+        $this->assertSame('New body.', $post->body);
+        $this->assertSame(1, \GrowthAtlas\Connector\Tests\Stubs\Post::where('growthatlas_draft_id', 7)->count());
+    }
+
+    public function test_update_falls_back_to_create_when_missing(): void
+    {
+        $this->putJson('/api/growthatlas/v1/content-drafts/999', $this->payload(55), $this->headers())
+             ->assertStatus(201)
+             ->assertJsonPath('data.created', true);
+
+        $this->assertSame(1, \GrowthAtlas\Connector\Tests\Stubs\Post::where('growthatlas_draft_id', 55)->count());
+    }
 }

@@ -5,8 +5,11 @@ return [
     |--------------------------------------------------------------------------
     | GrowthAtlas API Key
     |--------------------------------------------------------------------------
-    | This is the API key GrowthAtlas uses to authenticate requests to your
-    | connector. Set this in your .env file as GROWTHATLAS_API_KEY.
+    | The API key GrowthAtlas uses to authenticate requests to your connector.
+    |
+    | You can either set GROWTHATLAS_API_KEY in .env (used as the default) OR
+    | manage it from the GrowthAtlas Connector admin page (recommended). A value
+    | saved from the admin page is stored in the database and overrides .env.
     */
     'api_key' => env('GROWTHATLAS_API_KEY'),
 
@@ -14,8 +17,11 @@ return [
     |--------------------------------------------------------------------------
     | HMAC Signing Secret (optional)
     |--------------------------------------------------------------------------
-    | When set, GrowthAtlas will sign all requests with HMAC-SHA256 and your
-    | connector will verify the signature. Must match the secret in GrowthAtlas.
+    | When set, GrowthAtlas signs requests with HMAC-SHA256 and your connector
+    | verifies the signature. Must match the secret in GrowthAtlas.
+    |
+    | Like the API key, this can be set in .env OR managed (and rotated) from
+    | the admin page, where a saved value overrides .env.
     */
     'signing_secret' => env('GROWTHATLAS_SIGNING_SECRET'),
 
@@ -66,6 +72,10 @@ return [
 
         // Column for the growthatlas_draft_id meta (used for idempotency)
         'growthatlas_id_column' => 'growthatlas_draft_id',
+
+        // Default status applied when a payload arrives without publish_status.
+        // Can be overridden from the admin page.
+        'default_publish_status' => 'draft',
     ],
 
     /*
@@ -117,6 +127,9 @@ return [
     | growthatlas_inbound_requests table (publish + run the migration first).
     | This powers the recent-requests table on the Filament admin page.
     | Disable in high-traffic environments if you don't need the audit trail.
+    |
+    | This is the default only — it can be toggled from the admin page, where the
+    | saved value overrides .env.
     */
     'log_inbound' => env('GROWTHATLAS_LOG_INBOUND', false),
 

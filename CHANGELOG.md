@@ -11,6 +11,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] — 2026-07-02
+
+### Added
+
+- **Content updates ("refresh").** New `PUT|PATCH /content-drafts/{externalId}`
+  endpoint updates an already-published post in place instead of creating a
+  duplicate. Resolves the target by external id, falling back to
+  `growthatlas_draft_id`; if nothing matches it creates the post so an update is
+  never silently lost. `GET /health` now advertises `supports_update: true`.
+- **Database-managed settings.** The API key, HMAC signing secret and request
+  logging flag can now be set, rotated and toggled from the Filament admin page
+  — no `.env` editing required. Stored in the new `growthatlas_settings` table;
+  a saved value overrides the matching `.env`/config fallback.
+- **Received-content tracking.** Every article created or updated by GrowthAtlas
+  is recorded in the new `growthatlas_received_content` table and listed on the
+  admin page with links to view it on the site and open the originating draft in
+  GrowthAtlas (`growthatlas_url` payload field).
+
+### Changed
+
+- **Admin page redesign.** Status cards for API key / signing / logging (showing
+  whether each is managed here or from `.env`), a merged "Connection endpoint"
+  section with a copy button, an in-page **Test connection** modal (replaces the
+  "open /health in a new tab" button), a "Content from GrowthAtlas" table, and
+  the recent-requests audit table.
+- Request-logging middleware is now always registered and decides at runtime
+  from the (DB-managed) `log_inbound` setting.
+- `GET /health` reports `connector_version: 1.6.0`.
+
+### Migration guide (v1.5.0 → v1.6.0)
+
+Publish and run the new migrations:
+
+```bash
+php artisan vendor:publish --tag=growthatlas-connector-migrations
+php artisan migrate
+```
+
+Existing `.env` values keep working as defaults. To manage credentials from the
+admin page instead, open **Integrations → GrowthAtlas** and use *Set API key* /
+*Signing secret* / *Enable request logging*.
+
+---
+
 ## [1.5.0] — 2026-05-28
 
 ### Fixed

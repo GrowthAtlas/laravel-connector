@@ -10,4 +10,5 @@ Route::middleware([AuthenticateGrowthAtlas::class])->group(function () {
     Route::get('/pages', [ConnectorController::class, 'pages']);
     Route::get('/entities', [ConnectorController::class, 'entities']);
     Route::post('/content-drafts', [ConnectorController::class, 'createContentDraft']);
+    Route::match(['put', 'patch'], '/content-drafts/{externalId}', [ConnectorController::class, 'updateContentDraft']);
 });

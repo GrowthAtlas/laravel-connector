@@ -14,7 +14,7 @@ Install it on your Laravel site and GrowthAtlas can:
 - **Import your entities** (products, categories, locations) for topical authority clustering.
 - **Close the performance loop** using Google Search Console data from the GrowthAtlas dashboard.
 
-The package exposes five endpoints under `/api/growthatlas/v1/` that implement the [Connector API v1 specification](https://growthatlas.io/connector-api). All endpoints are secured with a Bearer token and optionally an HMAC-SHA256 signature. You configure which Eloquent models back the responses — no forking required.
+The package exposes six endpoints under `/api/growthatlas/v1/` that implement the [Connector API v1 specification](https://growthatlas.io/connector-api). All endpoints are secured with a Bearer token and optionally an HMAC-SHA256 signature. You configure which Eloquent models back the responses — no forking required.
 
 ---
 
@@ -23,7 +23,8 @@ The package exposes five endpoints under `/api/growthatlas/v1/` that implement t
 ```
 GrowthAtlas dashboard
         │
-        │  POST /api/growthatlas/v1/content-drafts  ← AI article payload
+        │  POST /api/growthatlas/v1/content-drafts  ← AI article payload (create)
+        │  PUT  /api/growthatlas/v1/content-drafts/{id} ← refresh existing post
         │  GET  /api/growthatlas/v1/pages            ← your published pages
         │  GET  /api/growthatlas/v1/entities         ← products, categories…
         │  GET  /api/growthatlas/v1/site-profile     ← site metadata
@@ -42,6 +43,13 @@ GrowthAtlas dashboard
 3. The connector validates the Bearer token and writes the article into your configured Eloquent model.
 4. The record appears in your database as a draft, ready for your review or auto-published.
 5. GrowthAtlas marks the content as published and tracks GSC performance.
+
+**Content refresh flow:**
+
+1. You edit a draft in GrowthAtlas that was already published to your site.
+2. GrowthAtlas `PUT`s the updated article to `/api/growthatlas/v1/content-drafts/{externalId}`.
+3. The connector updates the existing Eloquent record in place (no duplicate post).
+4. The **Content from GrowthAtlas** table on the Filament admin page shows the update count and links back to the draft.
 
 ---
 
@@ -73,13 +81,19 @@ php artisan vendor:publish --tag=growthatlas-connector-config
 
 This creates `config/growthatlas-connector.php` in your application.
 
-### 3. Add your API key to `.env`
+### 3. Add your API key
 
-Go to your GrowthAtlas dashboard → **Integrations** → **New Integration** → select **Laravel**. Copy the generated API key:
+**Option A — Filament admin page (recommended)**
+
+Register the plugin (see [Filament admin page](#filament-admin-page-optional)), open **Integrations → GrowthAtlas**, and click **Set API key**. Paste the key from GrowthAtlas or leave blank to generate one. Copy it into your GrowthAtlas integration settings.
+
+**Option B — `.env` fallback**
 
 ```dotenv
 GROWTHATLAS_API_KEY=ga_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
+A value saved from the admin page overrides `.env`.
 
 ---
 
@@ -148,9 +162,10 @@ Expected response:
   "data": {
     "status": "ok",
     "connector": "laravel",
-    "connector_version": "1.0.0",
+    "connector_version": "1.6.0",
     "platform": "laravel",
-    "growthatlas_api_version": "v1"
+    "growthatlas_api_version": "v1",
+    "supports_update": true
   }
 }
 ```
@@ -165,8 +180,8 @@ Then click **Test Connection** in the GrowthAtlas dashboard. A green tick means 
 
 | Key | Default | Purpose |
 |-----|---------|---------|
-| `api_key` | `env('GROWTHATLAS_API_KEY')` | Bearer token GrowthAtlas sends on every request. **Required.** |
-| `signing_secret` | `env('GROWTHATLAS_SIGNING_SECRET')` | Optional shared secret for HMAC-SHA256 signature verification. |
+| `api_key` | `env('GROWTHATLAS_API_KEY')` | Bearer token. **Required.** Can be set from the Filament admin page (overrides `.env`). |
+| `signing_secret` | `env('GROWTHATLAS_SIGNING_SECRET')` | Optional HMAC-SHA256 secret. Manage/rotate from the admin page. |
 | `route_prefix` | `"api/growthatlas/v1"` | Full URL prefix for all connector routes. |
 | `route_middleware` | `["api"]` | Laravel middleware group applied to connector routes. |
 | `publishing.model` | `App\Models\Post` | Eloquent model that receives content drafts. |
@@ -175,11 +190,25 @@ Then click **Test Connection** in the GrowthAtlas dashboard. A green tick means 
 | `publishing.status_map` | `{draft: draft, published: published}` | Maps GrowthAtlas status values to your model's status values. |
 | `publishing.growthatlas_id_column` | `"growthatlas_draft_id"` | Idempotency column — must be `unique` indexed. |
 | `publishing.published_at_column` | `"published_at"` | Timestamp column set to `now()` when pushing as `published`. Set to `null` to disable. |
+| `publishing.default_publish_status` | `"draft"` | Default when payload omits `publish_status`. |
 | `pages.source` | `"eloquent"` | How pages are fetched: `"eloquent"` or `"sitemap"`. |
 | `pages.model` | `App\Models\Post` | Eloquent model used when `source = "eloquent"`. |
 | `pages.url_column` | `"slug"` | Column containing the page URL or slug. |
 | `entities` | `[]` | Map of `type => ModelClass` for the `/entities` endpoint. |
-| `log_inbound` | `false` | Log each inbound request to `growthatlas_inbound_requests` table. Powers the Filament page. |
+| `log_inbound` | `false` | Log inbound requests to `growthatlas_inbound_requests`. Toggle from the admin page (overrides `.env`). |
+
+### Database tables (publish migrations first)
+
+| Table | Purpose |
+|-------|---------|
+| `growthatlas_settings` | API key, signing secret, logging flag — managed from Filament |
+| `growthatlas_received_content` | Audit of every article received from GrowthAtlas |
+| `growthatlas_inbound_requests` | Optional request log when logging is enabled |
+
+```bash
+php artisan vendor:publish --tag=growthatlas-connector-migrations
+php artisan migrate
+```
 
 ### Environment variables
 
@@ -306,15 +335,18 @@ After installation, run `php artisan route:list | grep growthatlas` to confirm:
 | `GET` | `api/growthatlas/v1/site-profile` | Site metadata |
 | `GET` | `api/growthatlas/v1/pages` | Paginated page list |
 | `GET` | `api/growthatlas/v1/entities` | Paginated entity list |
-| `POST` | `api/growthatlas/v1/content-drafts` | Receive content draft |
+| `POST` | `api/growthatlas/v1/content-drafts` | Receive new content draft |
+| `PUT` / `PATCH` | `api/growthatlas/v1/content-drafts/{externalId}` | Update an existing published post |
 
 The prefix is configurable via `route_prefix` in the config.
+
+Payload fields include `growthatlas_url` — an absolute link back to the draft in the GrowthAtlas dashboard. The connector stores this so the admin page can show a **GrowthAtlas** link next to each received article.
 
 ---
 
 ## Filament admin page (optional)
 
-Enable the built-in **GrowthAtlas Connector** Filament page to monitor your integration without leaving the admin panel. Requires **Filament 4**.
+Enable the built-in **GrowthAtlas Connector** Filament page to manage credentials, test connectivity, and monitor received content. Requires **Filament 4**.
 
 ### 1. Register the plugin in your panel provider
 
@@ -329,36 +361,30 @@ public function panel(Panel $panel): Panel
 }
 ```
 
-### 2. Enable inbound-request logging (optional but recommended)
-
-```dotenv
-GROWTHATLAS_LOG_INBOUND=true
-```
-
-Then publish and run the audit-log migration:
+### 2. Publish and run migrations
 
 ```bash
 php artisan vendor:publish --tag=growthatlas-connector-migrations
 php artisan migrate
 ```
 
-This creates the `growthatlas_inbound_requests` table.
+This creates `growthatlas_settings`, `growthatlas_received_content`, and (optionally) `growthatlas_inbound_requests`.
 
-### 3. Clear config cache
+### 3. Open Integrations → GrowthAtlas
 
-```bash
-php artisan config:clear
-```
+The admin page provides:
 
-The **GrowthAtlas** page now appears in your Filament sidebar under the **Integrations** group. It shows:
+| Feature | Description |
+|---------|-------------|
+| **Set API key** | Save or generate the Bearer token (overrides `.env`) |
+| **Signing secret** | Set, rotate, or disable HMAC verification |
+| **Enable / disable logging** | Toggle inbound request audit trail |
+| **Test connection** | Modal health check — no new browser tab |
+| **Connection endpoint** | Health URL with copy button |
+| **Content from GrowthAtlas** | Table of received articles with **View** (your site) and **GrowthAtlas** (draft link) |
+| **Recent requests** | Last 20 inbound calls when logging is on |
 
-- API key status (masked) and signing secret status
-- Last inbound request timestamp
-- Recent 20 inbound requests — endpoint, HTTP status, signature validity, IP, time
-- **Rotate signing secret** action — writes a new secret to `.env` and displays it for copying to the GrowthAtlas dashboard
-- **Open /health** button
-
----
+No `.env` editing is required once the page is set up. Existing `.env` values still work as defaults until you save a value from the UI.
 
 ## Troubleshooting
 
@@ -428,6 +454,25 @@ Expected response for first call (`created: true`):
 ```
 
 Run again with the same `growthatlas_draft_id` to verify idempotency — `created` will be `false`.
+
+### Update an existing post
+
+```bash
+curl -X PUT http://localhost/api/growthatlas/v1/content-drafts/1 \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "growthatlas_draft_id": 9999,
+    "title": "Updated Title",
+    "slug": "test-article",
+    "body": "## Updated content",
+    "publish_status": "published",
+    "growthatlas_url": "https://growthatlas.io/app/projects/1/content-drafts/42",
+    "source": "growthatlas"
+  }'
+```
+
+Expected: `"updated": true`, `"created": false`. The same database row is modified.
 
 ---
 
@@ -588,9 +633,10 @@ Go to **Integrations**, find the integration, click **Test Connection**. Green t
 | `404` on all routes | Service provider not loaded | Check auto-discovery; `php artisan route:list \| grep growthatlas` |
 | `500` on `/content-drafts` | Model not found or column missing | Check FQCN in config; run migration |
 | Draft created twice | `growthatlas_draft_id` not in `$fillable` | Add to `$fillable` on the model |
-| Signature 401 | Secret mismatch | Match secret in `.env` and GrowthAtlas dashboard |
+| Signature 401 | Secret mismatch | Match secret in admin page (or `.env`) and GrowthAtlas dashboard |
 | Published post returns 404 | `published_at` never set | Set `published_at_column` in config (default `"published_at"`) |
 | Featured image missing | Field not in field map | Uncomment `featured_image_url` in `publishing.fields` |
+| Update creates duplicate | `externalId` wrong or post deleted | Connector falls back to create; check `growthatlas_draft_id` on the model |
 
 ---
 

@@ -4,6 +4,7 @@ namespace GrowthAtlas\Connector\Http\Middleware;
 
 use Closure;
 use GrowthAtlas\Connector\Models\InboundRequest;
+use GrowthAtlas\Connector\Support\Settings;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -18,7 +19,7 @@ class LogInboundRequest
     {
         $response = $next($request);
 
-        if (! config('growthatlas-connector.log_inbound', false)) {
+        if (! Settings::loggingEnabled()) {
             return $response;
         }
 
@@ -26,7 +27,7 @@ class LogInboundRequest
             $segments  = array_values(array_filter(explode('/', $request->path())));
             $endpoint  = end($segments) ?: 'unknown';
 
-            $secret    = config('growthatlas-connector.signing_secret');
+            $secret    = Settings::signingSecret();
             $sigHeader = $request->header('X-GrowthAtlas-Signature');
             $sigValid  = null;
             if ($sigHeader && $secret) {

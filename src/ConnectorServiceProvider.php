@@ -51,10 +51,11 @@ class ConnectorServiceProvider extends ServiceProvider
 
     private function registerRoutes(): void
     {
-        $logEnabled = config('growthatlas-connector.log_inbound', false);
+        // The logging middleware is always attached; it decides at runtime
+        // whether to record based on the (DB-managed) log_inbound setting.
         $middleware = array_merge(
             config('growthatlas-connector.route_middleware', ['api']),
-            $logEnabled ? [LogInboundRequest::class] : [],
+            [LogInboundRequest::class],
         );
 
         $this->app->make('router')

@@ -3,6 +3,7 @@
 namespace GrowthAtlas\Connector\Http\Middleware;
 
 use Closure;
+use GrowthAtlas\Connector\Support\Settings;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -10,7 +11,7 @@ class AuthenticateGrowthAtlas
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $configuredKey = config('growthatlas-connector.api_key');
+        $configuredKey = Settings::apiKey();
 
         if (empty($configuredKey)) {
             return response()->json(['success' => false, 'message' => 'Connector API key not configured.'], 503);
@@ -25,7 +26,7 @@ class AuthenticateGrowthAtlas
             return response()->json(['success' => false, 'message' => 'Invalid API key.'], 401);
         }
 
-        $secret = config('growthatlas-connector.signing_secret');
+        $secret = Settings::signingSecret();
         if ($secret) {
             $signature = $request->header('X-GrowthAtlas-Signature', '');
             $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
