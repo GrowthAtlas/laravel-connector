@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.2] — 2026-07-12
+
+### Added
+
+- **Update available banner.** The Filament admin page checks Packagist (cached 12h)
+  and shows a warning when a newer stable `growthatlas/laravel-connector` release exists.
+
+### Changed
+
+- `GET /health` reports `connector_version: 1.7.2`.
+
 ## [1.7.1] — 2026-07-12
 
 ### Fixed

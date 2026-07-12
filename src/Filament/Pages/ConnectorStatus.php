@@ -12,6 +12,7 @@ use GrowthAtlas\Connector\Http\Controllers\ConnectorController;
 use GrowthAtlas\Connector\Models\InboundRequest;
 use GrowthAtlas\Connector\Models\ReceivedContent;
 use GrowthAtlas\Connector\Support\Settings;
+use GrowthAtlas\Connector\Support\VersionChecker;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -66,6 +67,7 @@ class ConnectorStatus extends Page
             'recentRequests'     => $recent,
             'receivedContent'    => $received,
             'healthUrl'          => $this->healthUrl(),
+            'versionStatus'      => VersionChecker::status(),
         ];
     }
 

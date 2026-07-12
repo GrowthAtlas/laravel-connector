@@ -7,6 +7,38 @@
     .ga-cs { --ga-border: rgba(255,255,255,.08); --ga-muted: rgba(156,163,175,1); }
     /* Space stacked Filament sections — host Tailwind space-y-* is not available */
     .ga-cs > * + * { margin-top: 1.25rem; }
+    .ga-cs__update {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: .85rem 1rem;
+        border-radius: .75rem;
+        border: 1px solid rgba(245, 158, 11, .45);
+        background: rgba(245, 158, 11, .12);
+        color: inherit;
+    }
+    .ga-cs__update-title { margin: 0; font-size: .9rem; font-weight: 600; }
+    .ga-cs__update-body { margin: .25rem 0 0; font-size: .8rem; opacity: .9; }
+    .ga-cs__update-meta { margin: .75rem 0 0; font-size: .75rem; opacity: .7; }
+    .ga-cs__update-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: .4rem .75rem;
+        border-radius: .5rem;
+        font-size: .8rem;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        background: rgba(245, 158, 11, .25);
+        color: inherit;
+        border: 1px solid rgba(245, 158, 11, .5);
+    }
+    .ga-cs__update-btn:hover { background: rgba(245, 158, 11, .35); }
+
+
     .ga-cs__cards {
         display: grid;
         grid-template-columns: 1fr;
@@ -119,6 +151,28 @@
 
 
     <div class="ga-cs">
+
+        @if(! empty($versionStatus['update_available']))
+            <div class="ga-cs__update" role="status">
+                <div>
+                    <p class="ga-cs__update-title">Update available</p>
+                    <p class="ga-cs__update-body">
+                        You are on <strong>v{{ $versionStatus['current'] }}</strong>.
+                        Latest release is <strong>v{{ $versionStatus['latest'] }}</strong>.
+                        Update the <code>growthatlas/laravel-connector</code> package on this site.
+                    </p>
+                </div>
+                <a
+                    class="ga-cs__update-btn"
+                    href="{{ $versionStatus['releases_url'] }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >View release</a>
+            </div>
+        @endif
+
+        <p class="ga-cs__meta">Connector version v{{ $versionStatus['current'] ?? '—' }}@if(! empty($versionStatus['checked']) && empty($versionStatus['update_available'])) · up to date@endif</p>
+
 
         {{-- ── Status overview ──────────────────────────────────────────── --}}
         <div class="ga-cs__cards">
