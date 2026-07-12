@@ -211,13 +211,17 @@ class ConnectorStatus extends Page
 
         try {
             $response = Http::timeout(8)->acceptJson()->get($url);
+            $data = $response->json('data') ?? $response->json();
+            $message = is_array($data) ? ($data['message'] ?? null) : null;
 
             return [
                 'ok'      => $response->successful(),
                 'status'  => $response->status(),
                 'url'     => $url,
-                'data'    => $response->json('data') ?? $response->json(),
-                'error'   => $response->successful() ? null : ('HTTP ' . $response->status()),
+                'data'    => $data,
+                'error'   => $response->successful()
+                    ? null
+                    : ($message ?: ('HTTP ' . $response->status())),
             ];
         } catch (\Throwable $e) {
             return [

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Admin UI styling.** Status cards, Content from GrowthAtlas table, and the
+  Test connection modal now use self-contained CSS so layout works even when the
+  host app does not compile this package’s Tailwind classes.
+- **`GET /health` without API key.** Returns HTTP `503` when no API key is
+  configured (admin page or `GROWTHATLAS_API_KEY`), so connection tests fail
+  until the connector is ready.
+
 ---
 
 ## [1.7.0] — 2026-07-12

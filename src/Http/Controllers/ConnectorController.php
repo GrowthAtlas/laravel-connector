@@ -19,6 +19,25 @@ class ConnectorController extends Controller
 
     public function health(): JsonResponse
     {
+        $apiKey = Settings::apiKey();
+
+        if ($apiKey === null || $apiKey === '') {
+            return response()->json([
+                'success' => false,
+                'data' => [
+                    'status' => 'error',
+                    'message' => 'API key is not configured. Set it in the GrowthAtlas admin page or GROWTHATLAS_API_KEY.',
+                    'connector' => 'laravel',
+                    'connector_version' => self::CONNECTOR_VERSION,
+                    'platform' => 'laravel',
+                    'platform_version' => App::version(),
+                    'php_version' => PHP_VERSION,
+                    'growthatlas_api_version' => 'v1',
+                    'supports_update' => true,
+                ],
+            ], 503);
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
