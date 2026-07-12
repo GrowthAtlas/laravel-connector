@@ -11,6 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] — 2026-07-12
+
+### Added
+
+- **`publishing.url_prefix`.** Optional path prefix (e.g. `blog`) prepended to the
+  slug when building the public URL returned to GrowthAtlas after create/update.
+  Fixes sites whose posts live under `/blog/{slug}` (or similar) instead of the
+  site root. When set, the prefix takes precedence over `Model::getUrl()`.
+  Configure via `GROWTHATLAS_URL_PREFIX` or published config.
+
+### Changed
+
+- `GET /health` reports `connector_version: 1.7.0`.
+
+---
+
 ## [1.6.0] — 2026-07-02
 
 ### Added

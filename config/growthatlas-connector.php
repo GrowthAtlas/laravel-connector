@@ -73,6 +73,12 @@ return [
         // Column for the growthatlas_draft_id meta (used for idempotency)
         'growthatlas_id_column' => 'growthatlas_draft_id',
 
+        // Optional public path prefix prepended to the slug when building the
+        // URL returned to GrowthAtlas (e.g. "blog" → https://site.com/blog/{slug}).
+        // When set, this takes precedence over Model::getUrl(). Leave empty/null
+        // to use getUrl() when available, otherwise url($slug).
+        'url_prefix' => env('GROWTHATLAS_URL_PREFIX'),
+
         // Default status applied when a payload arrives without publish_status.
         // Can be overridden from the admin page.
         'default_publish_status' => 'draft',

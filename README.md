@@ -162,7 +162,7 @@ Expected response:
   "data": {
     "status": "ok",
     "connector": "laravel",
-    "connector_version": "1.6.0",
+    "connector_version": "1.7.0",
     "platform": "laravel",
     "growthatlas_api_version": "v1",
     "supports_update": true
@@ -190,6 +190,7 @@ Then click **Test Connection** in the GrowthAtlas dashboard. A green tick means 
 | `publishing.status_map` | `{draft: draft, published: published}` | Maps GrowthAtlas status values to your model's status values. |
 | `publishing.growthatlas_id_column` | `"growthatlas_draft_id"` | Idempotency column — must be `unique` indexed. |
 | `publishing.published_at_column` | `"published_at"` | Timestamp column set to `now()` when pushing as `published`. Set to `null` to disable. |
+| `publishing.url_prefix` | `null` | Optional path prefix for returned public URLs (e.g. `blog` → `/blog/{slug}`). When set, overrides `Model::getUrl()`. |
 | `publishing.default_publish_status` | `"draft"` | Default when payload omits `publish_status`. |
 | `pages.source` | `"eloquent"` | How pages are fetched: `"eloquent"` or `"sitemap"`. |
 | `pages.model` | `App\Models\Post` | Eloquent model used when `source = "eloquent"`. |
@@ -247,6 +248,7 @@ GROWTHATLAS_LOG_INBOUND=false
     ],
     'status_column'          => 'status',
     'published_at_column'    => 'published_at',   // auto-set to now() when publishing
+    'url_prefix'             => 'blog',           // optional; e.g. posts live at /blog/{slug}
     'growthatlas_id_column'  => 'growthatlas_draft_id',
     'status_map' => ['draft' => 'draft', 'published' => 'published'],
 ],

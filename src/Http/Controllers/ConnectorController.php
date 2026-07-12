@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 class ConnectorController extends Controller
 {
-    public const CONNECTOR_VERSION = '1.6.0';
+    public const CONNECTOR_VERSION = '1.7.0';
 
     // ── Health ──────────────────────────────────────────────────────────────
 
@@ -284,7 +284,38 @@ class ConnectorController extends Controller
 
     protected function recordUrl($record): string
     {
-        return method_exists($record, 'getUrl') ? $record->getUrl() : url($record->slug ?? '');
+        $prefix = trim((string) (config('growthatlas-connector.publishing.url_prefix') ?? ''), '/');
+
+        // Explicit path prefix wins so sites under /blog (etc.) return the correct
+        // public URL without requiring a getUrl() method on the model.
+        if ($prefix !== '') {
+            return $this->urlFromSlug($record->slug ?? null, $prefix);
+        }
+
+        if (method_exists($record, 'getUrl')) {
+            return (string) $record->getUrl();
+        }
+
+        return $this->urlFromSlug($record->slug ?? null, '');
+    }
+
+    /**
+     * Build an absolute URL from an optional path prefix and slug.
+     */
+    protected function urlFromSlug(?string $slug, string $prefix = ''): string
+    {
+        $slug = ltrim((string) $slug, '/');
+        $prefix = trim($prefix, '/');
+
+        if ($prefix !== '' && $slug !== '') {
+            return url($prefix.'/'.$slug);
+        }
+
+        if ($prefix !== '') {
+            return url($prefix);
+        }
+
+        return url($slug);
     }
 
     /**

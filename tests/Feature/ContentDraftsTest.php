@@ -77,4 +77,16 @@ class ContentDraftsTest extends TestCase
 
         $this->assertSame(1, \GrowthAtlas\Connector\Tests\Stubs\Post::where('growthatlas_draft_id', 55)->count());
     }
+
+    public function test_create_url_includes_configured_url_prefix(): void
+    {
+        config()->set('growthatlas-connector.publishing.url_prefix', 'blog');
+
+        $response = $this->postJson('/api/growthatlas/v1/content-drafts', $this->payload(90), $this->headers())
+            ->assertStatus(201);
+
+        $url = $response->json('data.url');
+        $this->assertIsString($url);
+        $this->assertMatchesRegularExpression('#/blog/test-article/?$#', parse_url($url, PHP_URL_PATH) ?? '');
+    }
 }
