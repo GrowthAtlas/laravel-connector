@@ -162,7 +162,7 @@ Expected response:
   "data": {
     "status": "ok",
     "connector": "laravel",
-    "connector_version": "1.7.2",
+    "connector_version": "1.7.3",
     "platform": "laravel",
     "growthatlas_api_version": "v1",
     "supports_update": true

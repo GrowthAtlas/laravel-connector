@@ -171,7 +171,12 @@
             </div>
         @endif
 
-        <p class="ga-cs__meta">Connector version v{{ $versionStatus['current'] ?? '—' }}@if(! empty($versionStatus['checked']) && empty($versionStatus['update_available'])) · up to date@endif</p>
+        <p class="ga-cs__meta">
+            Connector version v{{ $versionStatus['current'] ?? '—' }}
+            @if (! empty($versionStatus['checked']) && empty($versionStatus['update_available']))
+                · up to date
+            @endif
+        </p>
 
 
         {{-- ── Status overview ──────────────────────────────────────────── --}}

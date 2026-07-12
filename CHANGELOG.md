@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.3] — 2026-07-12
+
+### Fixed
+
+- **Filament status page 500.** Inline `@if`/`@endif` on the version meta line
+  broke under Livewire’s Blade compiler; directives are now on separate lines.
+
+### Changed
+
+- `GET /health` reports `connector_version: 1.7.3`.
+
 ## [1.7.2] — 2026-07-12
 
 ### Added
