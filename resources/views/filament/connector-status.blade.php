@@ -5,11 +5,12 @@
 <x-filament-panels::page>
 <style>
     .ga-cs { --ga-border: rgba(255,255,255,.08); --ga-muted: rgba(156,163,175,1); }
+    /* Space stacked Filament sections — host Tailwind space-y-* is not available */
+    .ga-cs > * + * { margin-top: 1.25rem; }
     .ga-cs__cards {
         display: grid;
         grid-template-columns: 1fr;
         gap: 1rem;
-        margin-bottom: 1.25rem;
     }
     @media (min-width: 640px) {
         .ga-cs__cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }

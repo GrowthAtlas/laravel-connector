@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`GET /health` without API key.** Returns HTTP `503` when no API key is
   configured (admin page or `GROWTHATLAS_API_KEY`), so connection tests fail
   until the connector is ready.
+- **Section spacing.** Stacked admin sections (endpoint / content / requests) now have vertical gap via package CSS.
 - **Unresponsive header actions.** Page `<style>` must live inside
   `<x-filament-panels::page>` so Livewire keeps a single root; styles before the
   page root broke Filament header buttons (Test connection, Set API key, etc.).
