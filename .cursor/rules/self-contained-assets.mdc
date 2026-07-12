@@ -11,6 +11,8 @@ provide layout CSS or JS for the connector admin UI.
 
 - Put layout/visual CSS in the package (scoped `<style>` in Blade with a `ga-*`
   prefix, or a published CSS file loaded by the plugin/page).
+- **Livewire single root:** put `<style>` *inside* `<x-filament-panels::page>`,
+  never before it — a style sibling breaks Filament header actions.
 - Filament components are fine for Filament-owned chrome; do not rely on utility
   classes (`flex`, `grid`, `gap-*`, etc.) unless defined in package CSS.
 - Do not assume the host’s `app.css`, Vite, or Tailwind content paths include

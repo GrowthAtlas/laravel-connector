@@ -4,6 +4,7 @@
     $data = $result['data'] ?? [];
 @endphp
 
+<div class="ga-hr-root">
 <style>
     .ga-hr { font-size: .875rem; }
     .ga-hr__banner {
@@ -114,4 +115,5 @@
             @endforeach
         @endif
     </dl>
+</div>
 </div>

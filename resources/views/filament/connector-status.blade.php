@@ -2,6 +2,7 @@
   Layout CSS is self-contained: host apps do not compile this package's Tailwind
   classes, so Filament components alone are not enough for grids/tables/modals.
 --}}
+<x-filament-panels::page>
 <style>
     .ga-cs { --ga-border: rgba(255,255,255,.08); --ga-muted: rgba(156,163,175,1); }
     .ga-cs__cards {
@@ -115,7 +116,7 @@
     .ga-cs__mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 </style>
 
-<x-filament-panels::page>
+
     <div class="ga-cs">
 
         {{-- ── Status overview ──────────────────────────────────────────── --}}
