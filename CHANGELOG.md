@@ -9,18 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.7.1] — 2026-07-12
+
 ### Fixed
 
 - **Admin UI styling.** Status cards, Content from GrowthAtlas table, and the
-  Test connection modal now use self-contained CSS so layout works even when the
-  host app does not compile this package’s Tailwind classes.
-- **`GET /health` without API key.** Returns HTTP `503` when no API key is
-  configured (admin page or `GROWTHATLAS_API_KEY`), so connection tests fail
-  until the connector is ready.
-- **Section spacing.** Stacked admin sections (endpoint / content / requests) now have vertical gap via package CSS.
-- **Unresponsive header actions.** Page `<style>` must live inside
-  `<x-filament-panels::page>` so Livewire keeps a single root; styles before the
-  page root broke Filament header buttons (Test connection, Set API key, etc.).
+  Test connection modal use self-contained CSS (host Tailwind is not required).
+- **Section spacing.** Vertical gap between stacked Filament sections.
+- **Unresponsive header actions.** `<style>` must be inside
+  `<x-filament-panels::page>` (single Livewire root).
+- **`GET /health` without API key.** Returns HTTP `503` when no API key is configured.
+
+### Changed
+
+- `GET /health` reports `connector_version: 1.7.1`.
 
 ---
 
