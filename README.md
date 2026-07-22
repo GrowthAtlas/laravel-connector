@@ -34,6 +34,9 @@ GrowthAtlas dashboard
         ▼
   Your Laravel app
         │
+        │  POST /api/inbound/v1/social-posts  →  caption + image/video to Social Hub
+        ▲
+        │
         ▼
   App\Models\Post  (or any model you configure)
 ```
@@ -98,7 +101,8 @@ php artisan growthatlas:push-social-post \
   --media-url=https://cdn.example.com/video.mp4
 ```
 
-Full parameter reference and error codes will be documented in `docs/inbound-social.md` (Task 9).
+Full parameter reference, media limits, intake modes, and error codes:
+**[docs/inbound-social.md](docs/inbound-social.md)**.
 
 
 ---
