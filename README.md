@@ -14,6 +14,8 @@ Install it on your Laravel site and GrowthAtlas can:
 - **Import your entities** (products, categories, locations) for topical authority clustering.
 - **Close the performance loop** using Google Search Console data from the GrowthAtlas dashboard.
 
+Your site can also **push social posts to GrowthAtlas Social Hub** (caption + image/video) using the outbound client — see [Inbound Social (site → GrowthAtlas)](#inbound-social-site--growthatlas) below.
+
 The package exposes six endpoints under `/api/growthatlas/v1/` that implement the [Connector API v1 specification](https://growthatlas.io/connector-api). All endpoints are secured with a Bearer token and optionally an HMAC-SHA256 signature. You configure which Eloquent models back the responses — no forking required.
 
 ---
@@ -50,6 +52,54 @@ GrowthAtlas dashboard
 2. GrowthAtlas `PUT`s the updated article to `/api/growthatlas/v1/content-drafts/{externalId}`.
 3. The connector updates the existing Eloquent record in place (no duplicate post).
 4. The **Content from GrowthAtlas** table on the Filament admin page shows the update count and links back to the draft.
+
+---
+
+## Inbound Social (site → GrowthAtlas)
+
+Push social media packages from your Laravel app into GrowthAtlas Social Hub (Studio drafts, Autopilot queue, or publish-now).
+
+### Setup
+
+1. In GrowthAtlas, open your Integration → **Inbound Social** and generate an inbound token (`ga_in_…`).
+2. Add to your `.env`:
+
+```env
+GROWTHATLAS_API_BASE=https://growthatlas.io
+GROWTHATLAS_INBOUND_TOKEN=ga_in_your_token_here
+# optional default when payload omits intake_mode:
+# GROWTHATLAS_INBOUND_INTAKE_MODE=studio_draft
+```
+
+### Push from code
+
+```php
+use GrowthAtlas\Connector\Facades\GrowthAtlas;
+
+$response = GrowthAtlas::social()->pushPost([
+    'external_id' => 'campaign-42-post-7',
+    'format' => 'reel',
+    'caption' => 'Your caption here',
+    'media' => [
+        ['url' => 'https://cdn.example.com/video.mp4'],
+    ],
+]);
+
+$postId = $response['data']['id'];
+```
+
+### Smoke test (Artisan)
+
+```bash
+php artisan growthatlas:push-social-post \
+  --external-id=campaign-42-post-7 \
+  --format=reel \
+  --caption="Your caption" \
+  --media-url=https://cdn.example.com/video.mp4
+```
+
+Full parameter reference and error codes will be documented in `docs/inbound-social.md` (Task 9).
+
 
 ---
 

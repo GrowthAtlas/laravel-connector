@@ -141,6 +141,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Outbound — push social content to GrowthAtlas
+    |--------------------------------------------------------------------------
+    | Configure the inbound token issued in GrowthAtlas under
+    | Integration → Inbound Social. Your site pushes posts to GrowthAtlas
+    | Social Hub via POST /api/inbound/v1/social-posts.
+    */
+    'outbound' => [
+        'api_base' => env('GROWTHATLAS_API_BASE', 'https://growthatlas.io'),
+        'inbound_token' => env('GROWTHATLAS_INBOUND_TOKEN'),
+        'default_intake_mode' => env('GROWTHATLAS_INBOUND_INTAKE_MODE'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Filament Integration (optional)
     |--------------------------------------------------------------------------
     | Register the GrowthAtlas Connector Status page in your Filament panel by

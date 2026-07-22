@@ -3,7 +3,7 @@
     "description": "Official GrowthAtlas connector package for Laravel applications. Exposes the GrowthAtlas Connector API v1 endpoints to receive and publish AI-generated SEO content.",
     "type": "library",
     "license": "MIT",
-    "version": "1.7.3",
+    "version": "1.8.0",
     "authors": [
         {
             "name": "GrowthAtlas",
@@ -35,7 +35,10 @@
         "laravel": {
             "providers": [
                 "GrowthAtlas\\Connector\\ConnectorServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "GrowthAtlas": "GrowthAtlas\\Connector\\Facades\\GrowthAtlas"
+            }
         }
     },
     "scripts": {

@@ -2,7 +2,10 @@
 
 namespace GrowthAtlas\Connector;
 
+use GrowthAtlas\Connector\Console\PushSocialPostCommand;
 use GrowthAtlas\Connector\Http\Middleware\LogInboundRequest;
+use GrowthAtlas\Connector\Outbound\GrowthAtlasOutbound;
+use GrowthAtlas\Connector\Outbound\SocialClient;
 use Illuminate\Support\ServiceProvider;
 
 class ConnectorServiceProvider extends ServiceProvider
@@ -13,6 +16,20 @@ class ConnectorServiceProvider extends ServiceProvider
             __DIR__ . '/../config/growthatlas-connector.php',
             'growthatlas-connector',
         );
+
+        $this->app->singleton(SocialClient::class, function ($app) {
+            $config = $app['config']->get('growthatlas-connector.outbound', []);
+
+            return new SocialClient(
+                apiBase: (string) ($config['api_base'] ?? 'https://growthatlas.io'),
+                inboundToken: $config['inbound_token'] ?? null,
+                defaultIntakeMode: $config['default_intake_mode'] ?? null,
+            );
+        });
+
+        $this->app->singleton(GrowthAtlasOutbound::class, function ($app) {
+            return new GrowthAtlasOutbound($app->make(SocialClient::class));
+        });
     }
 
     public function boot(): void
@@ -21,6 +38,18 @@ class ConnectorServiceProvider extends ServiceProvider
         $this->registerRoutes();
         $this->registerViews();
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->registerCommands();
+    }
+
+    private function registerCommands(): void
+    {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->commands([
+            PushSocialPostCommand::class,
+        ]);
     }
 
     // ── Publishable assets ────────────────────────────────────────────────────

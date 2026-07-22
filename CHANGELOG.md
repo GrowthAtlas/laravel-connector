@@ -11,6 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] — 2026-07-23
+
+### Added
+
+- **Outbound Social client.** Push social posts from your Laravel site to GrowthAtlas
+  Social Hub via `GrowthAtlas::social()->pushPost([...])` (JSON URL mode) or
+  `pushPostMultipart(...)` for file uploads.
+- **Artisan smoke test.** `php artisan growthatlas:push-social-post` with
+  `--external-id`, `--format`, `--media-url`, and optional `--caption` /
+  `--intake-mode`.
+- **Outbound config.** `GROWTHATLAS_API_BASE`, `GROWTHATLAS_INBOUND_TOKEN`, and
+  optional `GROWTHATLAS_INBOUND_INTAKE_MODE` under `growthatlas-connector.outbound`.
+
+### Changed
+
+- `GET /health` reports `connector_version: 1.8.0`.
+
 ## [1.7.3] — 2026-07-12
 
 ### Fixed
