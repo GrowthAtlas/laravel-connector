@@ -21,11 +21,14 @@ and wants GrowthAtlas Social Hub to approve/schedule/publish to Instagram.
 Authorization: Bearer ga_in_…
 ```
 
-Optional:
+Optional (accepted and forwarded by the Laravel connector client; reserved for a future server-side cache):
 
 ```
 Idempotency-Key: <unique-string>
 ```
+
+Server idempotency is keyed on `external_id` per Integration. Re-sending the same
+`external_id` returns the existing post without creating duplicates.
 
 The inbound token is separate from your site’s connector API key (`ga_live_…`). GrowthAtlas
 shows the inbound token once at generation/rotation — store it in your secrets manager.
@@ -114,11 +117,13 @@ request with `intake_mode`.
 ## Idempotency and updates
 
 - Re-sending the same `external_id` for the same Integration returns the existing post (no
-  duplicate media).
-- Optional `Idempotency-Key` header provides an additional idempotency guard.
-- Updates (replace caption/media while still a draft) are allowed when status is `draft`.
-- Returns **409** when status is `published`, `processing`, `partially_published`, or
-  `retrying`.
+  duplicate media). This is the server’s idempotency key.
+- The optional `Idempotency-Key` header may be sent by clients (including the Laravel
+  connector) but is not used for server-side deduplication in v1; it is reserved for a
+  future optional cache layer.
+- Updates (replace caption/media) are allowed only while status is `draft`.
+- When status is not `draft`, the API returns the existing post unchanged (HTTP `200`) —
+  safe for idempotent retries; no recomposition or media re-ingest.
 
 ## Responses
 
@@ -153,7 +158,6 @@ request with `intake_mode`.
 | `401` | Missing, malformed, or invalid inbound token | `{"message":"Unauthorized."}` |
 | `403` | Inbound Social disabled on Integration | `{"message":"Inbound social is not enabled for this integration."}` |
 | `404` | Post id not found for this Integration | Laravel default 404 |
-| `409` | Illegal update (post no longer replaceable) | `{"message":"Post cannot be updated in its current status."}` |
 | `422` | Validation, SSRF, unsupported media, missing destinations/campaign | `{"message":"…","errors":{"field":["reason"]}}` |
 | `429` | Rate limit exceeded | `{"message":"Too Many Attempts."}` |
 
