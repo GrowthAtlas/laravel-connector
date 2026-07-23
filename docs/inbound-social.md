@@ -56,7 +56,7 @@ Rate limit: **60 requests per minute** per token (HTTP `429` when exceeded).
 | `scheduled_at` | ISO-8601 | no | Scheduling hint. Honored when intake mode allows; otherwise ignored. |
 | `social_profile_ids` | int[] | no | GrowthAtlas social profile IDs to publish to. Overrides Integration defaults. |
 | `intake_mode` | string | no | `studio_draft` \| `autopilot_queue` \| `publish_now`. Defaults to Integration setting. |
-| `media` | array | yes | 1–10 items. See [Media](#media). |
+| `media` | array | yes | 1–20 items. See [Media](#media). |
 
 ### Social profile IDs
 
@@ -75,7 +75,7 @@ those defaults. If neither the payload nor the Integration provides profiles, th
 | Max file size (multipart upload) | **300 MB** (`SOCIAL_MEDIA_MAX_UPLOAD_MB`, default 300) |
 | Max download size (URL mode) | **300 MB** (314,572,800 bytes; override with `SOCIAL_INBOUND_MAX_DOWNLOAD_BYTES`) |
 | URL download timeout | **30 seconds** (`SOCIAL_INBOUND_DOWNLOAD_TIMEOUT_SECONDS`) |
-| Max items per post | **10** |
+| Max items per post | **20** |
 | Allowed MIME types | `image/jpeg`, `image/png`, `image/webp`, `image/gif`, `video/mp4`, `video/quicktime` |
 
 Detected MIME type (not client-declared type alone) must match the allow-list. Video duration

@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.3] — 2026-07-23
+
+### Changed
+
+- Inbound Social docs: carousel / media max items raised from **10** to **20**
+  (Instagram carousel limit).
+
+### Notes
+
+- `GET /health` reports `connector_version: 1.8.3`.
+
 ## [1.8.2] — 2026-07-23
 
 ### Changed
