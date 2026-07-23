@@ -39,6 +39,7 @@ shows the inbound token once at generation/rotation — paste it into the connec
 
 | Method | Path | Content-Type |
 |--------|------|--------------|
+| GET | `/health` | — |
 | POST | `/social-posts` | `application/json` |
 | POST | `/social-posts/multipart` | `multipart/form-data` |
 | GET | `/social-posts/{id}` | — |

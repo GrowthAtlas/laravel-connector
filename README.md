@@ -92,6 +92,11 @@ $response = GrowthAtlas::social()->pushPost([
 $postId = $response['data']['id'];
 ```
 
+### Test connection (Filament)
+
+On **Integrations → GrowthAtlas**, click **Test outbound Social** after pasting your inbound token.
+This calls `GET /api/inbound/v1/health` on GrowthAtlas (no post is created).
+
 ### Smoke test (Artisan)
 
 ```bash

@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.4] — 2026-07-23
+
+### Added
+
+- **Test outbound Social** Filament action and `GrowthAtlas::social()->health()` —
+  calls `GET /api/inbound/v1/health` to verify the inbound token reaches GrowthAtlas.
+
+### Notes
+
+- `GET /health` reports `connector_version: 1.8.4`.
+
 ## [1.8.3] — 2026-07-23
 
 ### Changed

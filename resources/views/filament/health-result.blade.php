@@ -79,11 +79,13 @@
         />
         <div>
             <p class="ga-hr__banner-title">
-                {{ $ok ? 'Connector is reachable' : 'Connector is not reachable' }}
+                {{ $ok
+                    ? ($result['title_ok'] ?? 'Connector is reachable')
+                    : ($result['title_bad'] ?? 'Connector is not reachable') }}
             </p>
             <p class="ga-hr__banner-sub">
                 {{ $ok
-                    ? 'GrowthAtlas can talk to this site.'
+                    ? ($result['subtitle_ok'] ?? 'GrowthAtlas can talk to this site.')
                     : ($result['error'] ?? 'The health endpoint could not be reached.') }}
             </p>
         </div>
@@ -105,6 +107,10 @@
                 'platform_version' => 'Platform',
                 'php_version' => 'PHP',
                 'message' => 'Message',
+                'intake_mode' => 'Intake mode',
+                'integration_id' => 'Integration ID',
+                'project_id' => 'Project ID',
+                'default_profile_count' => 'Default profiles',
             ] as $key => $label)
                 @if(! empty($data[$key]))
                     <div class="ga-hr__row">
@@ -113,6 +119,18 @@
                     </div>
                 @endif
             @endforeach
+        @endif
+        @if(! empty($data['warnings']) && is_array($data['warnings']))
+            <div class="ga-hr__row" style="display:block;padding-top:1rem">
+                <dt class="ga-hr__label" style="margin-bottom:.35rem">Warnings</dt>
+                <dd class="ga-hr__value" style="text-align:left">
+                    <ul style="margin:0;padding-left:1.1rem">
+                        @foreach($data['warnings'] as $warning)
+                            <li>{{ $warning }}</li>
+                        @endforeach
+                    </ul>
+                </dd>
+            </div>
         @endif
     </dl>
 </div>

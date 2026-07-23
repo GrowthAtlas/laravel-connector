@@ -62,6 +62,15 @@ class SocialClient
     /**
      * @return array<string, mixed>
      */
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function health(): array
+    {
+        return $this->request('get', '/api/inbound/v1/health', []);
+    }
+
     public function getPost(int|string $id): array
     {
         return $this->request('get', '/api/inbound/v1/social-posts/'.$id, []);

@@ -83,6 +83,7 @@ class ConnectorStatus extends Page
     {
         return [
             $this->testConnectionAction(),
+            $this->testOutboundSocialAction(),
             $this->manageApiKeyAction(),
             $this->manageSigningSecretAction(),
             $this->manageOutboundTokenAction(),
@@ -106,6 +107,23 @@ class ConnectorStatus extends Page
             ->modalContent(fn () => view(
                 'growthatlas-connector::filament.health-result',
                 ['result' => $this->runHealthCheck()],
+            ));
+    }
+
+
+    protected function testOutboundSocialAction(): Action
+    {
+        return Action::make('test_outbound_social')
+            ->label('Test outbound Social')
+            ->icon('heroicon-o-arrow-up-tray')
+            ->color('success')
+            ->modalHeading('Outbound Social test')
+            ->modalWidth(Width::Large)
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Close')
+            ->modalContent(fn () => view(
+                'growthatlas-connector::filament.health-result',
+                ['result' => $this->runOutboundSocialCheck()],
             ));
     }
 
@@ -302,6 +320,63 @@ class ConnectorStatus extends Page
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function runOutboundSocialCheck(): array
+    {
+        $url = Settings::outboundApiBase().'/api/inbound/v1/health';
+
+        try {
+            $token = Settings::outboundInboundToken();
+            if ($token === null || $token === '') {
+                return [
+                    'ok' => false,
+                    'status' => null,
+                    'url' => $url,
+                    'data' => null,
+                    'error' => 'Outbound inbound token is not set. Use “Outbound token” above first.',
+                    'title_ok' => 'Outbound Social connected',
+                    'title_bad' => 'Outbound Social failed',
+                    'subtitle_ok' => 'This site can push posts to GrowthAtlas Social Hub.',
+                ];
+            }
+
+            $response = Http::timeout(12)
+                ->withToken($token)
+                ->acceptJson()
+                ->get($url);
+
+            $data = $response->json('data') ?? $response->json();
+            $message = is_array($data) ? ($data['message'] ?? null) : null;
+
+            return [
+                'ok' => $response->successful(),
+                'status' => $response->status(),
+                'url' => $url,
+                'data' => is_array($data) ? $data : null,
+                'error' => $response->successful()
+                    ? null
+                    : ($message ?: ('HTTP '.$response->status())),
+                'title_ok' => 'Outbound Social connected',
+                'title_bad' => 'Outbound Social failed',
+                'subtitle_ok' => 'This site can push posts to GrowthAtlas Social Hub.',
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'ok' => false,
+                'status' => null,
+                'url' => $url,
+                'data' => null,
+                'error' => $e->getMessage(),
+                'title_ok' => 'Outbound Social connected',
+                'title_bad' => 'Outbound Social failed',
+                'subtitle_ok' => 'This site can push posts to GrowthAtlas Social Hub.',
+            ];
+        }
+    }
 
     protected function runHealthCheck(): array
     {

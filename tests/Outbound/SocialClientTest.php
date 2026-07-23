@@ -153,4 +153,25 @@ class SocialClientTest extends TestCase
 
         $this->assertSame('scheduled', $result['data']['status']);
     }
+
+    public function test_health_hits_inbound_health_endpoint(): void
+    {
+        Http::fake([
+            'https://growthatlas.test/api/inbound/v1/health' => Http::response([
+                'data' => [
+                    'ok' => true,
+                    'message' => 'Inbound Social is ready to receive posts.',
+                    'intake_mode' => 'studio_draft',
+                ],
+            ]),
+        ]);
+
+        $result = GrowthAtlas::social()->health();
+
+        Http::assertSent(fn ($request) => $request->method() === 'GET'
+            && $request->url() === 'https://growthatlas.test/api/inbound/v1/health'
+            && $request->hasHeader('Authorization', 'Bearer ga_in_test_token'));
+
+        $this->assertTrue($result['data']['ok']);
+    }
 }
