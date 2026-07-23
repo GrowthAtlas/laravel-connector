@@ -65,13 +65,14 @@ Push social media packages from your Laravel app into GrowthAtlas Social Hub (St
 ### Setup
 
 1. In GrowthAtlas, open your Integration → **Inbound Social** and generate an inbound token (`ga_in_…`).
-2. Add to your `.env`:
+2. On your Laravel site’s Filament admin, open **Integrations → GrowthAtlas** and paste the token via **Outbound token**. Optionally set **API base URL** (defaults to `https://growthatlas.io`).
+3. Configure **default intake mode** only in GrowthAtlas (Integration → Inbound Social). Optional per-push override: pass `intake_mode` in `pushPost([...])`.
+
+`.env` fallbacks (optional — Filament settings take precedence):
 
 ```env
 GROWTHATLAS_API_BASE=https://growthatlas.io
 GROWTHATLAS_INBOUND_TOKEN=ga_in_your_token_here
-# optional default when payload omits intake_mode:
-# GROWTHATLAS_INBOUND_INTAKE_MODE=studio_draft
 ```
 
 ### Push from code

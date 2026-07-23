@@ -10,6 +10,7 @@ and wants GrowthAtlas Social Hub to approve/schedule/publish to Instagram.
 1. GrowthAtlas project with Social Hub + connected Instagram profile(s)
 2. Integration (Laravel / Custom API) with **Inbound Social** enabled
 3. Inbound token (`ga_in_…`) from Integration → Inbound Social → Generate
+4. Paste the token on your site’s Filament **GrowthAtlas** page (**Outbound token**), or set `GROWTHATLAS_INBOUND_TOKEN` as a fallback
 
 ## Base URL
 
@@ -31,7 +32,8 @@ Server idempotency is keyed on `external_id` per Integration. Re-sending the sam
 `external_id` returns the existing post without creating duplicates.
 
 The inbound token is separate from your site’s connector API key (`ga_live_…`). GrowthAtlas
-shows the inbound token once at generation/rotation — store it in your secrets manager.
+shows the inbound token once at generation/rotation — paste it into the connector Filament page
+(**Outbound token**) or your secrets manager / `.env` fallback.
 
 ## Endpoints
 
@@ -244,12 +246,16 @@ $response = GrowthAtlas::social()->pushPostMultipart(
 );
 ```
 
-Requires `.env`:
+Requires outbound credentials on the Filament **GrowthAtlas Connector** page
+(**Outbound token** + optional **API base URL**). `.env` fallbacks:
 
 ```env
 GROWTHATLAS_API_BASE=https://growthatlas.io
 GROWTHATLAS_INBOUND_TOKEN=ga_in_your_token_here
 ```
+
+Intake mode defaults come from the GrowthAtlas Integration setting — not from connector `.env`.
+Override per request with `intake_mode` in the payload when needed.
 
 ### Generic HTTP (Python requests)
 

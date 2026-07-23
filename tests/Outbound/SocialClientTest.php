@@ -4,8 +4,11 @@ namespace GrowthAtlas\Connector\Tests\Outbound;
 
 use GrowthAtlas\Connector\Facades\GrowthAtlas;
 use GrowthAtlas\Connector\Outbound\SocialClient;
+use GrowthAtlas\Connector\Support\Settings;
 use GrowthAtlas\Connector\Tests\TestCase;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 
 class SocialClientTest extends TestCase
@@ -17,8 +20,28 @@ class SocialClientTest extends TestCase
         $app['config']->set('growthatlas-connector.outbound', [
             'api_base' => 'https://growthatlas.test',
             'inbound_token' => 'ga_in_test_token',
-            'default_intake_mode' => null,
         ]);
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        parent::defineDatabaseMigrations();
+
+        if (! Schema::hasTable('growthatlas_settings')) {
+            Schema::create('growthatlas_settings', function (Blueprint $table) {
+                $table->id();
+                $table->string('key')->unique();
+                $table->text('value')->nullable();
+                $table->timestamps();
+            });
+        }
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Settings::set('outbound_inbound_token', null);
+        Settings::set('outbound_api_base', null);
     }
 
     public function test_push_post_sends_bearer_token_and_json_payload(): void
@@ -44,24 +67,28 @@ class SocialClientTest extends TestCase
         $result = GrowthAtlas::social()->pushPost($payload);
 
         Http::assertSent(function ($request) use ($payload) {
+            $body = $request->data();
+
             return $request->url() === 'https://growthatlas.test/api/inbound/v1/social-posts'
                 && $request->hasHeader('Authorization', 'Bearer ga_in_test_token')
                 && $request->hasHeader('Accept', 'application/json')
-                && $request['external_id'] === $payload['external_id']
-                && $request['format'] === 'reel'
-                && $request['caption'] === 'Hello world'
-                && $request['media'] === $payload['media'];
+                && ($body['external_id'] ?? null) === $payload['external_id']
+                && ($body['format'] ?? null) === 'reel'
+                && ($body['caption'] ?? null) === 'Hello world'
+                && ($body['media'] ?? null) === $payload['media']
+                && ! array_key_exists('intake_mode', $body);
         });
 
         $this->assertSame(42, $result['data']['id']);
     }
 
-    public function test_push_post_applies_default_intake_mode_when_omitted(): void
+    public function test_push_post_uses_settings_token_over_env_config(): void
     {
-        config()->set('growthatlas-connector.outbound.default_intake_mode', 'studio_draft');
+        Settings::set('outbound_inbound_token', 'ga_in_from_filament');
+        Settings::set('outbound_api_base', 'https://managed.growthatlas.test');
 
         Http::fake([
-            'https://growthatlas.test/api/inbound/v1/social-posts' => Http::response(['data' => ['id' => 1]], 201),
+            'https://managed.growthatlas.test/api/inbound/v1/social-posts' => Http::response(['data' => ['id' => 1]], 201),
         ]);
 
         GrowthAtlas::social()->pushPost([
@@ -70,7 +97,8 @@ class SocialClientTest extends TestCase
             'media' => [['url' => 'https://cdn.example.com/a.jpg']],
         ]);
 
-        Http::assertSent(fn ($request) => $request['intake_mode'] === 'studio_draft');
+        Http::assertSent(fn ($request) => $request->url() === 'https://managed.growthatlas.test/api/inbound/v1/social-posts'
+            && $request->hasHeader('Authorization', 'Bearer ga_in_from_filament'));
     }
 
     public function test_push_post_sends_idempotency_key_header_when_provided(): void
@@ -91,9 +119,10 @@ class SocialClientTest extends TestCase
     public function test_push_post_throws_when_inbound_token_missing(): void
     {
         config()->set('growthatlas-connector.outbound.inbound_token', null);
+        Settings::set('outbound_inbound_token', null);
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('GROWTHATLAS_INBOUND_TOKEN');
+        $this->expectExceptionMessage('GrowthAtlas Connector admin page');
 
         app(SocialClient::class)->pushPost([
             'external_id' => 'x',

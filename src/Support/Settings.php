@@ -24,6 +24,8 @@ class Settings
         'signing_secret'         => 'growthatlas-connector.signing_secret',
         'log_inbound'            => 'growthatlas-connector.log_inbound',
         'default_publish_status' => 'growthatlas-connector.publishing.default_publish_status',
+        'outbound_api_base'      => 'growthatlas-connector.outbound.api_base',
+        'outbound_inbound_token' => 'growthatlas-connector.outbound.inbound_token',
     ];
 
     /** @var array<string, string|null>|null */
@@ -39,6 +41,22 @@ class Settings
     public static function signingSecret(): ?string
     {
         $value = static::get('signing_secret');
+
+        return $value !== null && $value !== '' ? (string) $value : null;
+    }
+
+    public static function outboundApiBase(): string
+    {
+        $value = static::get('outbound_api_base', 'https://growthatlas.io');
+
+        $base = is_string($value) && $value !== '' ? $value : 'https://growthatlas.io';
+
+        return rtrim($base, '/');
+    }
+
+    public static function outboundInboundToken(): ?string
+    {
+        $value = static::get('outbound_inbound_token');
 
         return $value !== null && $value !== '' ? (string) $value : null;
     }

@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 class ConnectorController extends Controller
 {
-    public const CONNECTOR_VERSION = '1.8.1';
+    public const CONNECTOR_VERSION = '1.8.2';
 
     // ── Health ──────────────────────────────────────────────────────────────
 

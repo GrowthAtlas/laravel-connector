@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.2] — 2026-07-23
+
+### Changed
+
+- **Outbound Social credentials on Filament.** Manage `outbound_inbound_token` and
+  `outbound_api_base` from the GrowthAtlas Connector admin page (same pattern as the
+  inbound API key). DB settings take precedence over `.env`.
+- **Removed `GROWTHATLAS_INBOUND_INTAKE_MODE`.** Intake mode is configured only in the
+  GrowthAtlas dashboard (Integration → Inbound Social). Per-request `intake_mode` in
+  `pushPost([...])` still works as an override.
+
+### Notes
+
+- `GET /health` reports `connector_version: 1.8.2`.
+
 ## [1.8.1] — 2026-07-23
 
 ### Added / Docs

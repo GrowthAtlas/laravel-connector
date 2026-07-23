@@ -22,8 +22,8 @@ use Illuminate\Support\Str;
  *
  * Register in your panel provider via GrowthAtlasConnectorPlugin::make().
  *
- * Everything (API key, signing secret, logging) is managed from this page and
- * stored in the database — no .env editing required.
+ * Everything (API key, signing secret, logging, outbound Social credentials)
+ * is managed from this page and stored in the database — no .env editing required.
  */
 class ConnectorStatus extends Page
 {
@@ -56,6 +56,9 @@ class ConnectorStatus extends Page
             $received = ReceivedContent::orderByDesc('last_action_at')->limit(50)->get();
         }
 
+        $outboundToken = Settings::outboundInboundToken();
+        $outboundBase = Settings::outboundApiBase();
+
         return [
             'apiKeyConfigured'   => ! empty($apiKey),
             'apiKeyManaged'      => Settings::isManaged('api_key'),
@@ -63,6 +66,11 @@ class ConnectorStatus extends Page
             'signingConfigured'  => ! empty(Settings::signingSecret()),
             'signingManaged'     => Settings::isManaged('signing_secret'),
             'logEnabled'         => $logEnabled,
+            'outboundTokenConfigured' => ! empty($outboundToken),
+            'outboundTokenManaged'    => Settings::isManaged('outbound_inbound_token'),
+            'outboundTokenMasked'     => $outboundToken ? $this->mask($outboundToken) : null,
+            'outboundApiBase'         => $outboundBase,
+            'outboundApiBaseManaged'  => Settings::isManaged('outbound_api_base'),
             'lastInbound'        => $lastInbound,
             'recentRequests'     => $recent,
             'receivedContent'    => $received,
@@ -77,6 +85,8 @@ class ConnectorStatus extends Page
             $this->testConnectionAction(),
             $this->manageApiKeyAction(),
             $this->manageSigningSecretAction(),
+            $this->manageOutboundTokenAction(),
+            $this->manageOutboundApiBaseAction(),
             $this->toggleLoggingAction(),
         ];
     }
@@ -178,6 +188,92 @@ class ConnectorStatus extends Page
                     ->body("Copy this into GrowthAtlas now:\n{$secret}")
                     ->warning()
                     ->persistent()
+                    ->send();
+            });
+    }
+
+    protected function manageOutboundTokenAction(): Action
+    {
+        return Action::make('manage_outbound_token')
+            ->label('Outbound token')
+            ->icon('heroicon-o-arrow-up-tray')
+            ->color('primary')
+            ->modalHeading('Outbound Social inbound token')
+            ->modalDescription('Paste the ga_in_… token from GrowthAtlas → Integration → Inbound Social. Used when this site pushes posts to Social Hub.')
+            ->schema([
+                TextInput::make('outbound_inbound_token')
+                    ->label('Inbound token')
+                    ->password()
+                    ->revealable()
+                    ->autocomplete(false)
+                    ->placeholder('ga_in_…')
+                    ->helperText('Leave blank and enable “Clear token” to remove a stored value.'),
+                Toggle::make('clear')
+                    ->label('Clear token')
+                    ->live()
+                    ->default(false),
+            ])
+            ->action(function (array $data) {
+                if (! empty($data['clear'])) {
+                    Settings::set('outbound_inbound_token', null);
+
+                    Notification::make()
+                        ->title('Outbound token cleared')
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
+
+                $token = trim((string) ($data['outbound_inbound_token'] ?? ''));
+                if ($token === '') {
+                    Notification::make()
+                        ->title('No token entered')
+                        ->body('Paste a ga_in_… token, or enable Clear token to remove the stored value.')
+                        ->danger()
+                        ->send();
+
+                    return;
+                }
+
+                Settings::set('outbound_inbound_token', $token);
+
+                Notification::make()
+                    ->title('Outbound token saved')
+                    ->body('This site can now push social posts to GrowthAtlas.')
+                    ->success()
+                    ->send();
+            });
+    }
+
+    protected function manageOutboundApiBaseAction(): Action
+    {
+        return Action::make('manage_outbound_api_base')
+            ->label('API base URL')
+            ->icon('heroicon-o-globe-alt')
+            ->color('gray')
+            ->modalHeading('GrowthAtlas API base URL')
+            ->modalDescription('Base URL for outbound Social pushes. Default is https://growthatlas.io.')
+            ->schema([
+                TextInput::make('outbound_api_base')
+                    ->label('API base URL')
+                    ->url()
+                    ->default(fn () => Settings::outboundApiBase())
+                    ->required()
+                    ->helperText('No trailing slash required.'),
+            ])
+            ->action(function (array $data) {
+                $base = rtrim(trim((string) ($data['outbound_api_base'] ?? '')), '/');
+                if ($base === '') {
+                    $base = 'https://growthatlas.io';
+                }
+
+                Settings::set('outbound_api_base', $base);
+
+                Notification::make()
+                    ->title('API base URL saved')
+                    ->body($base)
+                    ->success()
                     ->send();
             });
     }

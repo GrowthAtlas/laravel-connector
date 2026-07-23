@@ -17,14 +17,8 @@ class ConnectorServiceProvider extends ServiceProvider
             'growthatlas-connector',
         );
 
-        $this->app->singleton(SocialClient::class, function ($app) {
-            $config = $app['config']->get('growthatlas-connector.outbound', []);
-
-            return new SocialClient(
-                apiBase: (string) ($config['api_base'] ?? 'https://growthatlas.io'),
-                inboundToken: $config['inbound_token'] ?? null,
-                defaultIntakeMode: $config['default_intake_mode'] ?? null,
-            );
+        $this->app->singleton(SocialClient::class, function () {
+            return new SocialClient;
         });
 
         $this->app->singleton(GrowthAtlasOutbound::class, function ($app) {

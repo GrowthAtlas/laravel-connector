@@ -45,6 +45,9 @@
         gap: 1rem;
     }
     @media (min-width: 640px) {
+        .ga-cs__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) {
         .ga-cs__cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
     .ga-cs__card-row {
@@ -263,6 +266,44 @@
                     @else
                         Turn on to keep an audit trail of inbound requests.
                     @endif
+                </p>
+            </x-filament::section>
+
+            <x-filament::section compact>
+                <div class="ga-cs__card-row">
+                    <div class="ga-cs__card-left">
+                        <span @class([
+                            'ga-cs__icon',
+                            'ga-cs__icon--ok' => $outboundTokenConfigured,
+                            'ga-cs__icon--bad' => ! $outboundTokenConfigured,
+                        ])>
+                            <x-filament::icon icon="heroicon-o-arrow-up-tray" class="h-5 w-5" />
+                        </span>
+                        <div>
+                            <p class="ga-cs__title">Outbound Social</p>
+                            <p class="ga-cs__sub">{{ $outboundTokenConfigured ? 'Token set' : 'Token missing' }}</p>
+                        </div>
+                    </div>
+                    <x-filament::badge :color="$outboundTokenConfigured ? 'success' : 'danger'" size="sm">
+                        {{ $outboundTokenConfigured ? 'Ready' : 'Missing' }}
+                    </x-filament::badge>
+                </div>
+                <p class="ga-cs__meta ga-cs__meta--mono">
+                    {{ $outboundTokenMasked ?? 'Use “Outbound token” above to paste ga_in_… from GrowthAtlas.' }}
+                </p>
+                @if($outboundTokenConfigured)
+                    <p class="ga-cs__meta">Source: {{ $outboundTokenManaged ? 'managed here' : '.env fallback' }}</p>
+                @endif
+                <p class="ga-cs__meta">
+                    API base: <span class="ga-cs__meta--mono">{{ $outboundApiBase }}</span>
+                    @if($outboundApiBaseManaged)
+                        (managed here)
+                    @else
+                        (default / .env)
+                    @endif
+                </p>
+                <p class="ga-cs__meta">
+                    Intake mode is set in GrowthAtlas (Integration → Inbound Social), not here.
                 </p>
             </x-filament::section>
         </div>

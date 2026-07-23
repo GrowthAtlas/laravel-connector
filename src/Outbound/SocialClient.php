@@ -2,6 +2,7 @@
 
 namespace GrowthAtlas\Connector\Outbound;
 
+use GrowthAtlas\Connector\Support\Settings;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -10,12 +11,6 @@ use RuntimeException;
 
 class SocialClient
 {
-    public function __construct(
-        private readonly string $apiBase,
-        private readonly ?string $inboundToken,
-        private readonly ?string $defaultIntakeMode = null,
-    ) {}
-
     /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
@@ -33,7 +28,6 @@ class SocialClient
     public function pushPostMultipart(array $payload, array $files = [], ?string $idempotencyKey = null): array
     {
         $token = $this->requireInboundToken();
-        $payload = $this->preparePayload($payload);
         $url = $this->endpoint('/api/inbound/v1/social-posts/multipart');
 
         $pending = Http::withToken($token)
@@ -80,7 +74,6 @@ class SocialClient
     private function request(string $method, string $path, array $payload, ?string $idempotencyKey = null): array
     {
         $token = $this->requireInboundToken();
-        $payload = $this->preparePayload($payload);
         $url = $this->endpoint($path);
 
         $pending = Http::withToken($token)
@@ -98,30 +91,13 @@ class SocialClient
         return $this->decodeResponse($response);
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
-    private function preparePayload(array $payload): array
-    {
-        if (
-            ! array_key_exists('intake_mode', $payload)
-            && $this->defaultIntakeMode !== null
-            && $this->defaultIntakeMode !== ''
-        ) {
-            $payload['intake_mode'] = $this->defaultIntakeMode;
-        }
-
-        return $payload;
-    }
-
     private function requireInboundToken(): string
     {
-        $token = $this->inboundToken;
+        $token = Settings::outboundInboundToken();
 
         if ($token === null || $token === '') {
             throw new RuntimeException(
-                'GrowthAtlas inbound token is not configured. Set GROWTHATLAS_INBOUND_TOKEN in your .env file.',
+                'GrowthAtlas inbound token is not configured. Paste it on the GrowthAtlas Connector admin page (Outbound Social), or set GROWTHATLAS_INBOUND_TOKEN as a temporary .env fallback.',
             );
         }
 
@@ -130,7 +106,7 @@ class SocialClient
 
     private function endpoint(string $path): string
     {
-        return rtrim($this->apiBase, '/').$path;
+        return Settings::outboundApiBase().$path;
     }
 
     /**
