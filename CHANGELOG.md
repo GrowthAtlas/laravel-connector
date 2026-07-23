@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.5] — 2026-07-23
+
+### Changed
+
+- Inbound Social docs: carousel / media max items corrected back to **10**
+  (Meta Content Publishing API hard limit; 20 was incorrect).
+
+### Notes
+
+- `GET /health` reports `connector_version: 1.8.5`.
+
 ## [1.8.4] — 2026-07-23
 
 ### Added
