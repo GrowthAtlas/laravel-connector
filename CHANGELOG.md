@@ -18,6 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.1] — 2026-07-23
+
+### Added / Docs
+- Full customer contract in `docs/inbound-social.md` (params, intake modes, curl/PHP/Python examples).
+- Clarified that server idempotency is keyed on `external_id` per Integration; `Idempotency-Key` is accepted by the client and reserved for a future cache layer.
+
+### Notes
+- `GET /health` reports `connector_version: 1.8.1`.
+- Packagist tag includes inbound docs that landed on `main` after `v1.8.0`.
+
 ## [1.8.0] — 2026-07-23
 
 ### Added
