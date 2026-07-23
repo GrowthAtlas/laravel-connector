@@ -9,13 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- **Inbound Social docs.** Full customer contract in
-  [`docs/inbound-social.md`](docs/inbound-social.md) — auth, endpoints, parameter
-  reference, media limits, intake modes, idempotency, error codes, and curl / PHP /
-  Python examples.
-
 ---
 
 ## [1.8.1] — 2026-07-23
