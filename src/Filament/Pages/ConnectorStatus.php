@@ -11,6 +11,7 @@ use Filament\Support\Enums\Width;
 use GrowthAtlas\Connector\Http\Controllers\ConnectorController;
 use GrowthAtlas\Connector\Models\InboundRequest;
 use GrowthAtlas\Connector\Models\ReceivedContent;
+use GrowthAtlas\Connector\Support\OutboundSocialHealth;
 use GrowthAtlas\Connector\Support\Settings;
 use GrowthAtlas\Connector\Support\VersionChecker;
 use Illuminate\Support\Facades\Http;
@@ -76,6 +77,7 @@ class ConnectorStatus extends Page
             'receivedContent'    => $received,
             'healthUrl'          => $this->healthUrl(),
             'versionStatus'      => VersionChecker::status(),
+            'instagramAlerts'    => OutboundSocialHealth::instagramAlerts(),
         ];
     }
 

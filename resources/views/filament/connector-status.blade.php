@@ -37,6 +37,25 @@
         border: 1px solid rgba(245, 158, 11, .5);
     }
     .ga-cs__update-btn:hover { background: rgba(245, 158, 11, .35); }
+    .ga-cs__alert {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: .85rem 1rem;
+        border-radius: .75rem;
+        border: 1px solid rgba(245, 158, 11, .45);
+        background: rgba(245, 158, 11, .12);
+        color: inherit;
+        margin-bottom: .75rem;
+    }
+    .ga-cs__alert--danger {
+        border-color: rgba(239, 68, 68, .5);
+        background: rgba(239, 68, 68, .12);
+    }
+    .ga-cs__alert-title { margin: 0; font-size: .9rem; font-weight: 600; }
+    .ga-cs__alert-body { margin: .25rem 0 0; font-size: .8rem; opacity: .9; }
 
 
     .ga-cs__cards {
@@ -154,6 +173,34 @@
 
 
     <div class="ga-cs">
+
+        @if(! empty($instagramAlerts))
+            @foreach($instagramAlerts as $alert)
+                @php
+                    $severity = is_array($alert) ? ($alert['severity'] ?? 'warning') : 'warning';
+                    $message = is_array($alert) ? ($alert['message'] ?? '') : (string) $alert;
+                    $reconnectUrl = is_array($alert) ? ($alert['reconnect_url'] ?? null) : null;
+                    $code = is_array($alert) ? ($alert['code'] ?? 'expiring') : 'expiring';
+                    $title = $code === 'reconnect_required'
+                        ? 'Instagram reconnect required'
+                        : ($code === 'expired' ? 'Instagram connection expired' : 'Instagram connection expiring');
+                @endphp
+                <div class="ga-cs__alert{{ $severity === 'danger' ? ' ga-cs__alert--danger' : '' }}" role="alert">
+                    <div>
+                        <p class="ga-cs__alert-title">{{ $title }}</p>
+                        <p class="ga-cs__alert-body">{{ $message }}</p>
+                    </div>
+                    @if(! empty($reconnectUrl))
+                        <a
+                            class="ga-cs__update-btn"
+                            href="{{ $reconnectUrl }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >Reconnect Instagram</a>
+                    @endif
+                </div>
+            @endforeach
+        @endif
 
         @if(! empty($versionStatus['update_available']))
             <div class="ga-cs__update" role="status">

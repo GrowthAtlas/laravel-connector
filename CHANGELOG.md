@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.6] — 2026-09-11
+
+### Added
+
+- Filament GrowthAtlas page shows Instagram token-expiry and reconnect warnings
+  from GrowthAtlas inbound health (`instagram_alerts`) without clicking
+  **Test outbound Social**.
+
+### Notes
+
+- `GET /health` reports `connector_version: 1.8.6`.
+- Requires GrowthAtlas inbound health that returns `instagram_alerts`.
+
 ## [1.8.5] — 2026-07-23
 
 ### Changed
