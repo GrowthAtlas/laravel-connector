@@ -65,9 +65,12 @@ class ConnectorServiceProvider extends ServiceProvider
         ], 'growthatlas-connector-migrations');
 
         // php artisan vendor:publish --tag=growthatlas-connector-views
-        $this->publishes([
-            __DIR__ . '/../resources/views' => resource_path('views/vendor/growthatlas-connector'),
-        ], 'growthatlas-connector-views');
+        // (only when Filament is installed, as views depend on Filament components)
+        if ($this->filamentIsInstalled()) {
+            $this->publishes([
+                __DIR__ . '/../resources/views' => resource_path('views/vendor/growthatlas-connector'),
+            ], 'growthatlas-connector-views');
+        }
     }
 
     // ── Routes ────────────────────────────────────────────────────────────────
@@ -91,6 +94,19 @@ class ConnectorServiceProvider extends ServiceProvider
 
     private function registerViews(): void
     {
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'growthatlas-connector');
+        // Only register views when Filament is installed, as all views under
+        // resources/views/filament/ depend on Filament Blade components
+        // (<x-filament::icon>, <x-filament::section>, etc.). Without this guard,
+        // `php artisan view:cache` fails on non-Filament sites.
+        if ($this->filamentIsInstalled()) {
+            $this->loadViewsFrom(__DIR__ . '/../resources/views', 'growthatlas-connector');
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function filamentIsInstalled(): bool
+    {
+        return class_exists(\Filament\Facades\Filament::class);
     }
 }
