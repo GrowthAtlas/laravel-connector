@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.7] — 2026-09-26
+
+### Fixed
+
+- **[Blocker]** `php artisan view:cache` no longer fails on sites without Filament.
+  The service provider now guards view registration (and the `growthatlas-connector-views`
+  publish tag) with a `Filament\Facades\Filament` class check. Views under
+  `resources/views/filament/` depend on Filament Blade components (`<x-filament::icon>`,
+  `<x-filament::section>`, etc.), so they are only loaded when Filament is installed.
+  Behaviour is unchanged for sites with Filament; the Filament admin UI and all
+  Filament-specific features work exactly as before.
+
+### Notes
+
+- `GET /health` reports `connector_version: 1.8.7`.
+
+---
+
 ## [1.8.6] — 2026-09-11
 
 ### Added
